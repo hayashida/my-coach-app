@@ -10,7 +10,7 @@
 
 - [ ] 2. Core: コンポーネント・フックの並列実装
 
-- [ ] 2.1 (P) useSessionStorage フックを実装する
+- [x] 2.1 (P) useSessionStorage フックを実装する
   - `src/hooks/use-session-storage.ts` を新規作成する
   - `saveCurrentSession(sessionId, messages)`: `coach_sessions` の該当セッションを upsert する（`createdAt` は**初回作成時のみ**設定し、既存セッション更新時は変更しない）。`coach_current_session_id` を localStorage に保存する
   - `archiveCurrentSession(sessionId, messages)`: `messages.length > 0` の場合のみ現在のセッションを過去一覧に格上げする。過去セッション数が 3 を超える場合は `createdAt` が最小のセッションを削除する。`coach_current_session_id` を localStorage から削除する
