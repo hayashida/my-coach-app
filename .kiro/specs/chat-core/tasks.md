@@ -10,7 +10,7 @@
   - `npm run build` が成功することを確認する
   - _Requirements: 3.1, 3.2_
 
-- [ ] 1.2 Message 型定義とコーチング用システムプロンプト定数を実装する
+- [x] 1.2 Message 型定義とコーチング用システムプロンプト定数を実装する
   - `src/types/message.ts` に `Message` 型（`role: "user" | "assistant"`, `content: string`）を作成する（session-history スペックとの共有契約）
   - `src/lib/system-prompt.ts` に AI コーチングの動作ルール（答えを直接教えない、ヒントと問いかけで思考を促す、中学生向けの言葉を使う、Markdown 形式で返答する）を定義した `SYSTEM_PROMPT` 定数を実装する
   - `npx tsc --noEmit` が成功することを確認する
