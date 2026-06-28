@@ -19,14 +19,13 @@
 - [ ] 2. Core: NextAuth.js 認証設定
 
 - [x] 2.1 NextAuth.js 基本設定とルート保護 Middleware を実装する
-- [x] 2.2 NextAuth.js メインインスタンスと ALLOWED_EMAILS アクセス制御を実装する
   - `src/auth.config.ts` に `authorized` コールバックを実装する：未認証ユーザーが `/chat` にアクセスすると `false` を返し `/` にリダイレクトさせる。認証済みユーザーが `/` にアクセスすると `Response.redirect("/chat")` を返す
   - `pages.signIn: "/"` を設定して未認証時のデフォルトリダイレクト先を指定する
   - `src/middleware.ts` で `NextAuth(authConfig).auth` をデフォルト export し、静的ファイル・`_next/*` を除外する matcher を設定する
   - 未認証状態で `/chat` にアクセスするとサーバーサイドで `/` にリダイレクトされる（ブラウザ確認可）
   - _Requirements: 4.1, 4.2_
 
-- [ ] 2.2 NextAuth.js メインインスタンスと ALLOWED_EMAILS アクセス制御を実装する
+- [x] 2.2 NextAuth.js メインインスタンスと ALLOWED_EMAILS アクセス制御を実装する
   - `src/auth.ts` に Google プロバイダーを設定した NextAuth インスタンスを作成し、`handlers`, `auth`, `signIn`, `signOut` を export する
   - `signIn` コールバックで `ALLOWED_EMAILS` 環境変数をカンマ区切りで分割し、大文字小文字を統一して(`toLowerCase`)メールアドレスを照合する
   - `ALLOWED_EMAILS` が未設定の場合は空配列として扱い、全ログインを拒否する（フェイルセーフ）
@@ -46,7 +45,7 @@
   - _Boundary: LoginButton, LoginPage_
   - _Depends: 2.2_
 
-- [ ] 3.2 (P) ログアウトボタンとチャットページシェルを実装する
+- [x] 3.2 (P) ログアウトボタンとチャットページシェルを実装する
   - `src/components/auth/logout-button.tsx` に `<form>` タグと `'use server'` アクションで `signOut({ redirectTo: "/" })` を呼び出すボタンを実装する
   - `src/app/chat/page.tsx` に `LogoutButton` を含むチャットページシェルを実装する（チャット本体のコンテンツは chat-core スペックが追加する）
   - `/chat` にアクセスするとログアウトボタンが表示される（ログアウトボタンをクリックすると `/` に遷移する）
