@@ -71,7 +71,7 @@
   - _Requirements: 1.1, 1.2, 2.2, 2.3, 2.4, 2.5_
   - _Depends: 2.1, 2.2_
 
-- [ ] 3.2 UI統合（読み取り専用モード・ドロワー）をチャットページに実装する
+- [x] 3.2 UI統合（読み取り専用モード・ドロワー）をチャットページに実装する
   - `viewingSession: Session | null` state を追加する
   - 表示メッセージを `viewingSession ? viewingSession.messages : messages` で切り替える
   - ドロワートグルボタンを追加し `isDrawerOpen` state で `SessionDrawer` の開閉を制御する
