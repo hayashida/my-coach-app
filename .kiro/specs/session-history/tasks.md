@@ -31,7 +31,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
   - _Boundary: useChat_
 
-- [ ] 2.3 (P) SessionListItem コンポーネントを実装する
+- [x] 2.3 (P) SessionListItem コンポーネントを実装する
   - `src/components/session/session-list-item.tsx` を新規作成する（`'use client'` 指定）
   - セッション内の最初のユーザーメッセージ（`role === "user"` の最初の要素）の `content` を最大30文字で表示する
   - 30文字超過時は末尾に `"..."` を付加する
