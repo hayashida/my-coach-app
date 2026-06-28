@@ -18,7 +18,7 @@
 
 - [ ] 2. Core: バックエンド・フロントエンドコンポーネントの並列実装
 
-- [ ] 2.1 (P) /api/chat Route Handler を実装する
+- [x] 2.1 (P) /api/chat Route Handler を実装する
   - `src/app/api/chat/route.ts` に POST エンドポイントを作成する（Node.js Runtime のみ対応、`export const runtime = "edge"` は設定しない）
   - `auth()` でセッションを確認し、未認証の場合は `{ error: "Unauthorized" }` と HTTP 401 を返す（`/api` パスは Middleware の除外対象のため、Route Handler 内での認証確認が必須）
   - リクエストボディから `{ message: string, history: Message[] }` を取得し、`history` の `role` を `"assistant" → "model"` に変換して Gemini の history 形式にマッピングする
