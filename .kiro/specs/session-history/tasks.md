@@ -61,7 +61,7 @@
 
 - [ ] 3. Integration: チャットページへの統合
 
-- [ ] 3.1 セッション永続化をチャットページに配線する
+- [x] 3.1 セッション永続化をチャットページに配線する
   - `src/app/chat/page.tsx` で `useSessionStorage` の `initialSessionData` を取得し、`useChat({ initialMessages: initialSessionData?.messages ?? [] })` に渡す
   - `currentSessionIdRef`（useRef）と state の両方で現在のセッションIDを管理する（stale closure 対策）
   - `handleSendMessage` ラッパーを実装する: `currentSessionIdRef.current` が null の場合 `crypto.randomUUID()` で生成し ref を即時更新・state を非同期更新してから `sendMessage` を呼ぶ
