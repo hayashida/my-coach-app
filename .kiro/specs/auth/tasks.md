@@ -19,6 +19,7 @@
 - [ ] 2. Core: NextAuth.js 認証設定
 
 - [x] 2.1 NextAuth.js 基本設定とルート保護 Middleware を実装する
+- [x] 2.2 NextAuth.js メインインスタンスと ALLOWED_EMAILS アクセス制御を実装する
   - `src/auth.config.ts` に `authorized` コールバックを実装する：未認証ユーザーが `/chat` にアクセスすると `false` を返し `/` にリダイレクトさせる。認証済みユーザーが `/` にアクセスすると `Response.redirect("/chat")` を返す
   - `pages.signIn: "/"` を設定して未認証時のデフォルトリダイレクト先を指定する
   - `src/middleware.ts` で `NextAuth(authConfig).auth` をデフォルト export し、静的ファイル・`_next/*` を除外する matcher を設定する
@@ -74,6 +75,7 @@
 - [ ]* 4.3 E2E テストで認証フロー全体を検証する（オプション）
 
 ## Implementation Notes
+- [2.2] allow-list.ts は auth.ts から直接 import されておらず、テストは checkAllowedEmail ヘルパーをテストしている（本番コードは同等ロジックをインライン）。Task 4.1 で auth.ts の signIn コールバック本体を直接テストする際に統合する。
 - [2.1] Next.js 16.x では `src/middleware.ts` が非推奨になり `src/proxy.ts` へのリネームが推奨される警告が出る（`⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.`）。機能的影響はなく、設計書通り middleware.ts を使用。将来 Next.js 16 に完全対応する際は proxy.ts へのリネームと設計書更新が必要。
   - 許可されたアカウントでログインすると `/chat` に遷移することをテストする
   - 許可されていないアカウントでログイン試行するとエラーページが表示されることをテストする
