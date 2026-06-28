@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: プロジェクト基盤のセットアップ
+- [x] 1. Foundation: プロジェクト基盤のセットアップ
 
 - [x] 1.1 Next.js App Router プロジェクトを初期化し shadcn/ui を設定する
   - `create-next-app` で TypeScript + Tailwind CSS + App Router + src/ ディレクトリ構成で初期化する
@@ -16,7 +16,7 @@
   - `.env.local.example` にすべての必須変数が記載されており、開発者がコピーしてすぐ使える状態になっている
   - _Requirements: 3.1_
 
-- [ ] 2. Core: NextAuth.js 認証設定
+- [x] 2. Core: NextAuth.js 認証設定
 
 - [x] 2.1 NextAuth.js 基本設定とルート保護 Middleware を実装する
   - `src/auth.config.ts` に `authorized` コールバックを実装する：未認証ユーザーが `/chat` にアクセスすると `false` を返し `/` にリダイレクトさせる。認証済みユーザーが `/` にアクセスすると `Response.redirect("/chat")` を返す
@@ -35,7 +35,7 @@
   - _Requirements: 2.2, 2.3, 3.1, 3.2, 3.3_
   - _Depends: 2.1_
 
-- [ ] 3. Core: UI コンポーネントとページの実装
+- [x] 3. Core: UI コンポーネントとページの実装
 
 - [x] 3.1 (P) ログインボタンとログインページを実装する
   - `src/components/auth/login-button.tsx` に `<form>` タグと `'use server'` アクションで `signIn("google", { redirectTo: "/chat" })` を呼び出すボタンを実装する
@@ -53,7 +53,7 @@
   - _Boundary: LogoutButton, ChatShell_
   - _Depends: 2.2_
 
-- [ ] 4. Validation: テストと動作確認
+- [x] 4. Validation: テストと動作確認
 
 - [x] 4.1 ALLOWED_EMAILS アクセス制御の単体テストを書く
   - `signIn` コールバックロジックに対して以下の4ケースをテストする：

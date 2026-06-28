@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Foundation: パッケージ・環境変数・共有型の整備
+- [x] 1. Foundation: パッケージ・環境変数・共有型の整備
 
 - [x] 1.1 依存パッケージをインストールし環境変数テンプレートと jest 設定を整備する
   - `@google/genai`、`react-markdown`、`remark-gfm` をインストールする（`npm install @google/genai react-markdown remark-gfm`）
@@ -16,7 +16,7 @@
   - `npx tsc --noEmit` が成功することを確認する
   - _Requirements: 2.3, 3.2_
 
-- [ ] 2. Core: バックエンド・フロントエンドコンポーネントの並列実装
+- [x] 2. Core: バックエンド・フロントエンドコンポーネントの並列実装
 
 - [x] 2.1 (P) /api/chat Route Handler を実装する
   - `src/app/api/chat/route.ts` に POST エンドポイントを作成する（Node.js Runtime のみ対応、`export const runtime = "edge"` は設定しない）
@@ -59,7 +59,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 5.1_
   - _Boundary: ChatInput_
 
-- [ ] 3. Integration: チャットページへの統合
+- [x] 3. Integration: チャットページへの統合
 
 - [x] 3.1 チャットページにすべてのコンポーネントを統合する
   - `src/app/chat/page.tsx` のプレースホルダーを削除し、`useChat`・`ChatMessage`・`ChatInput`・`LogoutButton`（既存）を統合する
@@ -71,7 +71,7 @@
   - _Requirements: 1.1, 2.1, 2.2, 3.3, 5.1, 5.2_
   - _Depends: 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 4. Validation: テストの実装
+- [x] 4. Validation: テストの実装
 
 - [x] 4.1 (P) /api/chat Route Handler の統合テストを書く
   - 未認証リクエスト（セッションなし）→ HTTP 401 を返すことをテストする
