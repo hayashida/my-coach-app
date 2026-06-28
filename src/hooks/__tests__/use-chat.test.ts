@@ -169,6 +169,23 @@ describe("useChat", () => {
       expect(onStreamComplete).not.toHaveBeenCalled();
     });
 
+    it("HTTP 500 エラー時に onStreamComplete が呼ばれない（要件 1.4）", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        body: null,
+      });
+
+      const onStreamComplete = jest.fn();
+      const { result } = renderHook(() => useChat({ onStreamComplete }));
+
+      await act(async () => {
+        await result.current.sendMessage("テスト");
+      });
+
+      expect(onStreamComplete).not.toHaveBeenCalled();
+    });
+
     it("ネットワーク例外発生時に onStreamComplete が呼ばれない（要件 1.3）", async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 

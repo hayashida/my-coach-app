@@ -95,7 +95,7 @@
   - _Requirements: 1.1, 1.2, 1.5, 2.3, 3.4_
   - _Boundary: useSessionStorage_
 
-- [ ] 4.2 (P) useChat 拡張の単体テストを書く
+- [x] 4.2 (P) useChat 拡張の単体テストを書く
   - `initialMessages` 指定時に `messages` の初期値が指定値になる（要件1.2）
   - `onStreamComplete` がストリーミング完了後（エラーなし）に呼ばれる（要件1.1）
   - `onStreamComplete` が Gemini エラー発生時（401/429/500）に呼ばれない（要件1.3, 1.4）
