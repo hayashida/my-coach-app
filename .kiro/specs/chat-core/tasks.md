@@ -61,7 +61,7 @@
 
 - [ ] 3. Integration: チャットページへの統合
 
-- [ ] 3.1 チャットページにすべてのコンポーネントを統合する
+- [x] 3.1 チャットページにすべてのコンポーネントを統合する
   - `src/app/chat/page.tsx` のプレースホルダーを削除し、`useChat`・`ChatMessage`・`ChatInput`・`LogoutButton`（既存）を統合する
   - `useChat` の `messages` を `ChatMessage` のリストとして表示する
   - `useChat` の `sendMessage` を `ChatInput.onSubmit` に渡す
