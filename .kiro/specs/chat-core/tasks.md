@@ -46,7 +46,7 @@
   - _Requirements: 2.1, 4.1_
   - _Boundary: ChatMessage_
 
-- [ ] 2.4 (P) ChatInput コンポーネントを実装する
+- [x] 2.4 (P) ChatInput コンポーネントを実装する
   - `src/components/chat/chat-input.tsx` に `ChatInput` コンポーネントを実装する（`'use client'` 指定）
   - `onSubmit: (text: string) => void` と `disabled: boolean` を prop として受け取る
   - テキストエリア（`textarea`）と送信ボタンを表示する
