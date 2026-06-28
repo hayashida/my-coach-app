@@ -81,7 +81,7 @@
   - _Requirements: 3.1, 3.3, 6.1, 6.2_
   - _Boundary: ChatRoute_
 
-- [ ] 4.2 (P) useChat フックの単体テストを書く
+- [x] 4.2 (P) useChat フックの単体テストを書く
   - `fetch` をモックして以下をテストする:
     - 空文字列の `sendMessage("")` → fetch が呼ばれない（要件 1.5）
     - fetch が HTTP 401 → `error` に適切なメッセージが設定され、`isStreaming` が `false` になる（要件 6.1, 6.3）

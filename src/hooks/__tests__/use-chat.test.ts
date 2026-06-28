@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { useChat } from "../use-chat";
 
 beforeEach(() => {
@@ -87,6 +87,53 @@ describe("useChat", () => {
   });
 
   describe("ストリーミング状態管理", () => {
+    it("送信中は isStreaming が true になり、完了後は false になる（要件 5.1 / 5.2）", async () => {
+      // ストリームの読み取りを一時停止させ、isStreaming === true の状態を観測できるようにする
+      let resolveChunk!: () => void;
+      const chunkReady = new Promise<void>((resolve) => {
+        resolveChunk = resolve;
+      });
+
+      const pausedStream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          await chunkReady; // resolveChunk() が呼ばれるまでストリームを停止
+          controller.enqueue(new TextEncoder().encode("テスト"));
+          controller.close();
+        },
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: pausedStream,
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      // sendMessage を開始するが完了を待たない
+      // 同期 act() で sendMessage 呼び出し前の初期状態更新（setIsStreaming, setMessages）を包む
+      // ストリームが停止中のため sendMessage は reader.read() で suspended のまま
+      act(() => {
+        void result.current.sendMessage("こんにちは");
+      });
+
+      // isStreaming が true になるまで waitFor でポーリング（要件 5.1）
+      await waitFor(() => {
+        expect(result.current.isStreaming).toBe(true);
+      });
+
+      // ストリームを完了させる
+      await act(async () => {
+        resolveChunk();
+        await new Promise<void>((r) => setTimeout(r, 50));
+      });
+
+      // 完了後は isStreaming が false（要件 5.2）
+      await waitFor(() => {
+        expect(result.current.isStreaming).toBe(false);
+      });
+    });
+
     it("送信完了後に isStreaming が false になり assistant メッセージが追記される", async () => {
       const stream = new ReadableStream({
         start(controller) {
