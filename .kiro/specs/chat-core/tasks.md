@@ -29,7 +29,7 @@
   - _Requirements: 3.1, 3.2, 3.3, 6.1, 6.2, 6.3_
   - _Boundary: ChatRoute_
 
-- [ ] 2.2 (P) useChat カスタムフックを実装する
+- [x] 2.2 (P) useChat カスタムフックを実装する
   - `src/hooks/use-chat.ts` に `useChat` フックを実装する（`messages: Message[]`, `isStreaming: boolean`, `error: string | null`, `sendMessage: (text: string) => Promise<void>` を返す）
   - `sendMessage` の動作: ①テキストが空なら即リターン（要件 1.5） ②呼び出し時点の `messages` を `historySnapshot` に保存する（history 二重送信防止） ③`messages` に `{ role: "user", content: text }` を追加 ④`isStreaming = true`, `error = null` ⑤`messages` に `{ role: "assistant", content: "" }` を追加 ⑥`POST /api/chat` を `{ message: text, history: historySnapshot }` で呼び出す ⑦`response.body` を `ReadableStream` として読み取り、チャンクを最後の assistant メッセージの `content` に追記 ⑧完了後 `isStreaming = false`
   - HTTP エラーレスポンス（401/429/500）受信時は `error` に適切な日本語メッセージを設定し `isStreaming = false` にする（要件 6.1, 6.2, 6.3）
