@@ -86,6 +86,179 @@ describe("useChat", () => {
     });
   });
 
+  describe("UseChatOptions - initialMessages", () => {
+    it("initialMessages を指定した場合、messages の初期値が指定値になる（要件 1.2）", () => {
+      const initial = [
+        { role: "user" as const, content: "こんにちは" },
+        { role: "assistant" as const, content: "はじめまして" },
+      ];
+      const { result } = renderHook(() => useChat({ initialMessages: initial }));
+      expect(result.current.messages).toEqual(initial);
+    });
+
+    it("initialMessages を指定しない場合、messages の初期値が空配列になる（後方互換）", () => {
+      const { result } = renderHook(() => useChat());
+      expect(result.current.messages).toEqual([]);
+    });
+
+    it("initialMessages に空配列を指定した場合、messages の初期値が空配列になる", () => {
+      const { result } = renderHook(() => useChat({ initialMessages: [] }));
+      expect(result.current.messages).toEqual([]);
+    });
+  });
+
+  describe("UseChatOptions - onStreamComplete", () => {
+    it("ストリーミングが正常完了後に onStreamComplete が最新 messages を引数に呼ばれる（要件 1.1）", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答テキスト"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const onStreamComplete = jest.fn();
+      const { result } = renderHook(() => useChat({ onStreamComplete }));
+
+      await act(async () => {
+        await result.current.sendMessage("テスト送信");
+      });
+
+      expect(onStreamComplete).toHaveBeenCalledTimes(1);
+      const calledWith = onStreamComplete.mock.calls[0][0];
+      expect(calledWith).toHaveLength(2);
+      expect(calledWith[0]).toEqual({ role: "user", content: "テスト送信" });
+      expect(calledWith[1]).toEqual({ role: "assistant", content: "返答テキスト" });
+    });
+
+    it("HTTP 401 エラー時に onStreamComplete が呼ばれない（要件 1.4）", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        body: null,
+      });
+
+      const onStreamComplete = jest.fn();
+      const { result } = renderHook(() => useChat({ onStreamComplete }));
+
+      await act(async () => {
+        await result.current.sendMessage("テスト");
+      });
+
+      expect(onStreamComplete).not.toHaveBeenCalled();
+    });
+
+    it("HTTP 429 エラー時に onStreamComplete が呼ばれない（要件 1.4）", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 429,
+        body: null,
+      });
+
+      const onStreamComplete = jest.fn();
+      const { result } = renderHook(() => useChat({ onStreamComplete }));
+
+      await act(async () => {
+        await result.current.sendMessage("テスト");
+      });
+
+      expect(onStreamComplete).not.toHaveBeenCalled();
+    });
+
+    it("ネットワーク例外発生時に onStreamComplete が呼ばれない（要件 1.3）", async () => {
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+
+      const onStreamComplete = jest.fn();
+      const { result } = renderHook(() => useChat({ onStreamComplete }));
+
+      await act(async () => {
+        await result.current.sendMessage("テスト");
+      });
+
+      expect(onStreamComplete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("clearMessages", () => {
+    it("clearMessages 呼び出し後に messages が空配列になる（要件 2.2）", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await act(async () => {
+        await result.current.sendMessage("こんにちは");
+      });
+
+      expect(result.current.messages).toHaveLength(2);
+
+      act(() => {
+        result.current.clearMessages();
+      });
+
+      expect(result.current.messages).toEqual([]);
+    });
+
+    it("clearMessages 後に sendMessage を呼ぶと history が空でリクエストされる", async () => {
+      const stream1 = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答1"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream1,
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await act(async () => {
+        await result.current.sendMessage("最初のメッセージ");
+      });
+
+      act(() => {
+        result.current.clearMessages();
+      });
+
+      const stream2 = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答2"));
+          controller.close();
+        },
+      });
+      (fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream2,
+      });
+
+      await act(async () => {
+        await result.current.sendMessage("新しいメッセージ");
+      });
+
+      const secondCallBody = JSON.parse(
+        (fetch as jest.Mock).mock.calls[1][1].body as string
+      );
+      // clearMessages 後は history が空（messagesRef もリセット済み）
+      expect(secondCallBody.history).toHaveLength(0);
+    });
+  });
+
   describe("ストリーミング状態管理", () => {
     it("送信中は isStreaming が true になり、完了後は false になる（要件 5.1 / 5.2）", async () => {
       // ストリームの読み取りを一時停止させ、isStreaming === true の状態を観測できるようにする

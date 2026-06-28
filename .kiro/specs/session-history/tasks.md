@@ -21,7 +21,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 2.2, 2.3, 3.2, 3.4_
   - _Boundary: useSessionStorage_
 
-- [ ] 2.2 (P) useChat フックを拡張する
+- [x] 2.2 (P) useChat フックを拡張する
   - `src/hooks/use-chat.ts` に `UseChatOptions`（`initialMessages?: Message[]`, `onStreamComplete?: (messages: Message[]) => void`）を追加する
   - `initialMessages` を `useState<Message[]>` の初期値として使用する
   - `onStreamComplete` はストリーミングが `error` なし（`error === null`）で完了した直後に最新の `messages` を引数に呼び出す

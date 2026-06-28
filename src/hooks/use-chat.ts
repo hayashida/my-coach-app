@@ -1,11 +1,19 @@
 import { useRef, useState } from "react";
 import { Message } from "@/types/message";
 
+export interface UseChatOptions {
+  // マウント時の初期メッセージ（localStorage 復元用）
+  initialMessages?: Message[];
+  // ストリーミングがエラーなしで完了した後に呼ばれるコールバック
+  onStreamComplete?: (messages: Message[]) => void;
+}
+
 export interface UseChatReturn {
   messages: Message[];
   isStreaming: boolean;
   error: string | null;
   sendMessage: (text: string) => Promise<void>;
+  clearMessages: () => void;
 }
 
 function getErrorMessage(status: number): string {
@@ -18,21 +26,27 @@ function getErrorMessage(status: number): string {
   return "エラーが発生しました。もう一度お試しください。";
 }
 
-export function useChat(): UseChatReturn {
-  const [messages, setMessages] = useState<Message[]>([]);
+export function useChat(options?: UseChatOptions): UseChatReturn {
+  const [messages, setMessages] = useState<Message[]>(
+    options?.initialMessages ?? []
+  );
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ref で常に最新の messages を同期的に参照できるようにする
-  const messagesRef = useRef<Message[]>([]);
+  const messagesRef = useRef<Message[]>(options?.initialMessages ?? []);
 
   // state と ref を同時に更新するヘルパー
+  // messagesRef.current を source of truth として同期的に更新し、setMessages に結果を渡す
   const updateMessages = (updater: (prev: Message[]) => Message[]) => {
-    setMessages((prev) => {
-      const next = updater(prev);
-      messagesRef.current = next;
-      return next;
-    });
+    const next = updater(messagesRef.current);
+    messagesRef.current = next;
+    setMessages(next);
+  };
+
+  const clearMessages = (): void => {
+    setMessages([]);
+    messagesRef.current = [];
   };
 
   const sendMessage = async (text: string): Promise<void> => {
@@ -53,6 +67,8 @@ export function useChat(): UseChatReturn {
 
     // 5. 空の assistant メッセージを追加
     updateMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+    let streamCompletedSuccessfully = false;
 
     try {
       // 6. POST /api/chat（historySnapshot を使って二重送信防止）
@@ -94,13 +110,21 @@ export function useChat(): UseChatReturn {
           }
         }
       }
+
+      // エラーなしでストリーミング完了
+      streamCompletedSuccessfully = true;
     } catch {
       setError(getErrorMessage(0));
     } finally {
       // 8. 完了後 isStreaming = false
       setIsStreaming(false);
+
+      // onStreamComplete はエラーなし完了時のみ呼ぶ
+      if (streamCompletedSuccessfully && options?.onStreamComplete) {
+        options.onStreamComplete(messagesRef.current);
+      }
     }
   };
 
-  return { messages, isStreaming, error, sendMessage };
+  return { messages, isStreaming, error, sendMessage, clearMessages };
 }
