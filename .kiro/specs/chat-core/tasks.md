@@ -92,7 +92,7 @@
   - _Requirements: 1.5, 5.1, 5.2, 6.1, 6.2, 6.3_
   - _Boundary: UseChat_
 
-- [ ]* 4.3 (P) ChatInput のキーボード動作テストを書く
+- [x]* 4.3 (P) ChatInput のキーボード動作テストを書く
   - `@testing-library/react` と `@testing-library/user-event` を使用して以下をテストする:
     - テキスト入力後 Enter キー → `onSubmit` が呼ばれる（要件 1.3）
     - テキスト入力後 Shift+Enter → `onSubmit` が呼ばれない（要件 1.4）
