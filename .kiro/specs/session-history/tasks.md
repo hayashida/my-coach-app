@@ -105,7 +105,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.2_
   - _Boundary: useChat_
 
-- [ ] 4.3 (P) SessionListItem・SessionDrawer・ReadonlyBanner のコンポーネントテストを書く
+- [x] 4.3 (P) SessionListItem・SessionDrawer・ReadonlyBanner のコンポーネントテストを書く
   - `SessionListItem`: 最初のユーザーメッセージが30文字超過時に `"..."` が付加される（要件3.3）
   - `SessionListItem`: ユーザーメッセージが存在しない場合に「（メッセージなし）」を表示する
   - `SessionDrawer`: `sessions` が空配列の場合に空状態メッセージを表示する
