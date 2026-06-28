@@ -9,7 +9,7 @@
   - ローカル開発サーバーが `http://localhost:3000` で起動し、`/` にアクセスできる
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 1.2 next-auth@5 をインストールし環境変数テンプレートを整備する
+- [x] 1.2 next-auth@5 をインストールし環境変数テンプレートを整備する
   - `next-auth@5` をプロジェクトにインストールする
   - `.env.local.example` ファイルを作成し `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `ALLOWED_EMAILS` の記載例を追加する
   - `.gitignore` に `.env.local` が含まれていることを確認し、なければ追加する
