@@ -55,7 +55,7 @@
 
 - [ ] 4. Validation: テストと動作確認
 
-- [ ] 4.1 ALLOWED_EMAILS アクセス制御の単体テストを書く
+- [x] 4.1 ALLOWED_EMAILS アクセス制御の単体テストを書く
   - `signIn` コールバックロジックに対して以下の4ケースをテストする：
     - `ALLOWED_EMAILS` に含まれるメールアドレス → `true` を返す
     - `ALLOWED_EMAILS` に含まれないメールアドレス → `false` を返す

@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { authConfig } from "@/auth.config";
+import { checkAllowedEmail } from "@/lib/allow-list";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -12,11 +13,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!profile?.email_verified) return false;
 
       const allowedEmails =
-        process.env.ALLOWED_EMAILS?.split(",").map((e) =>
-          e.trim().toLowerCase()
-        ) ?? [];
+        process.env.ALLOWED_EMAILS?.split(",").map((e) => e.trim()) ?? [];
 
-      return allowedEmails.includes((user.email ?? "").toLowerCase());
+      return checkAllowedEmail(user.email ?? "", allowedEmails);
     },
   },
 });
