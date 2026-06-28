@@ -40,7 +40,7 @@
   - _Requirements: 3.3_
   - _Boundary: SessionListItem_
 
-- [ ] 2.4 (P) ReadonlyBanner コンポーネントを実装する
+- [x] 2.4 (P) ReadonlyBanner コンポーネントを実装する
   - `src/components/session/readonly-banner.tsx` を新規作成する（`'use client'` 指定）
   - 「過去の会話を表示中」ラベルと「現在の会話に戻る」ボタンを含む
   - `sticky top-0` で画面上部に固定表示する
