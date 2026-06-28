@@ -2,6 +2,8 @@
 
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import type { Message } from "@/types/message";
 
 interface ChatMessageProps {
@@ -24,7 +26,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <span className="whitespace-pre-wrap">{message.content}</span>
         ) : (
           <Markdown
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
             components={{
               code({ className, children, ...props }) {
                 const isInline = !className;
