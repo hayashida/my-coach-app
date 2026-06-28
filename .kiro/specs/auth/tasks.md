@@ -38,7 +38,7 @@
 
 - [ ] 3. Core: UI コンポーネントとページの実装
 
-- [ ] 3.1 (P) ログインボタンとログインページを実装する
+- [x] 3.1 (P) ログインボタンとログインページを実装する
   - `src/components/auth/login-button.tsx` に `<form>` タグと `'use server'` アクションで `signIn("google", { redirectTo: "/chat" })` を呼び出すボタンを実装する
   - `src/app/page.tsx` にアプリの説明テキストと `LoginButton` を含むログインページを実装する
   - ログインページ（`/`）にアクセスするとアプリ説明と「Google でログイン」ボタンが表示される
