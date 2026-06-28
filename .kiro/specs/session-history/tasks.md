@@ -48,7 +48,7 @@
   - _Requirements: 4.3, 4.4_
   - _Boundary: ReadonlyBanner_
 
-- [ ] 2.5 SessionDrawer コンポーネントを実装する
+- [x] 2.5 SessionDrawer コンポーネントを実装する
   - `src/components/session/session-drawer.tsx` を新規作成する（`'use client'` 指定）
   - `@base-ui/react` の `Dialog.Root` / `Dialog.Portal` / `Dialog.Backdrop` / `Dialog.Popup` を使用してサイドドロワーを実装する
   - `Dialog.Popup` は `fixed left-0 top-0 h-full w-64 bg-white shadow-xl` で左サイドパネルとして表示する
