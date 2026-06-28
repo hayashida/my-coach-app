@@ -8,7 +8,7 @@
   - `npx tsc --noEmit` で型エラーなく通過する
   - _Requirements: 1.1, 2.2, 3.3_
 
-- [ ] 2. Core: コンポーネント・フックの並列実装
+- [x] 2. Core: コンポーネント・フックの並列実装
 
 - [x] 2.1 (P) useSessionStorage フックを実装する
   - `src/hooks/use-session-storage.ts` を新規作成する
@@ -59,7 +59,7 @@
   - _Depends: 2.3_
   - _Boundary: SessionDrawer_
 
-- [ ] 3. Integration: チャットページへの統合
+- [x] 3. Integration: チャットページへの統合
 
 - [x] 3.1 セッション永続化をチャットページに配線する
   - `src/app/chat/page.tsx` で `useSessionStorage` の `initialSessionData` を取得し、`useChat({ initialMessages: initialSessionData?.messages ?? [] })` に渡す
