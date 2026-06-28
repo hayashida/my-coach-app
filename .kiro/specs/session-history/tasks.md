@@ -82,7 +82,7 @@
   - _Requirements: 2.1, 3.1, 4.1, 4.2, 4.3, 4.4_
   - _Depends: 2.4, 2.5, 3.1_
 
-- [ ] 4. Validation: テストの実装
+- [x] 4. Validation: テストの実装
 
 - [x] 4.1 (P) useSessionStorage の単体テストを書く
   - `saveCurrentSession` がメッセージを localStorage に保存し、既存セッションの `createdAt` を変更しない（要件1.1）
@@ -114,7 +114,7 @@
   - _Requirements: 3.3, 4.4_
   - _Boundary: SessionDrawer, SessionListItem, ReadonlyBanner_
 
-- [ ] 4.4 (P) チャットページの統合テストを書く
+- [x] 4.4 (P) チャットページの統合テストを書く
   - ドロワーでセッションを選択した後、読み取り専用モードに切り替わり、選択したセッションのメッセージが表示される（要件4.1）
   - 読み取り専用モード中: `ChatInput` が非表示、`ReadonlyBanner` が表示される（要件4.2, 4.3）
   - 「新しい会話」ボタン: `isStreaming=true` の場合 disabled（要件2.4）
