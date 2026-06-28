@@ -250,6 +250,26 @@ describe("archiveCurrentSession", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 構造的検証: ログアウトイベントリスナー不在（要件1.5）
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("構造的検証: ログアウトイベントリスナー不在", () => {
+  it("ログアウトイベントリスナー（signOut/NextAuth auth event）が存在しない（要件1.5）", () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require("fs");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const path = require("path");
+    const source = fs.readFileSync(
+      path.join(__dirname, "../../hooks/use-session-storage.ts"),
+      "utf-8"
+    );
+    expect(source).not.toContain("signOut");
+    expect(source).not.toContain("authEvent");
+    expect(source).not.toContain("onAuthStateChanged");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // pastSessions
 // ─────────────────────────────────────────────────────────────────────────────
 

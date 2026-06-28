@@ -84,7 +84,7 @@
 
 - [ ] 4. Validation: テストの実装
 
-- [ ] 4.1 (P) useSessionStorage の単体テストを書く
+- [x] 4.1 (P) useSessionStorage の単体テストを書く
   - `saveCurrentSession` がメッセージを localStorage に保存し、既存セッションの `createdAt` を変更しない（要件1.1）
   - `archiveCurrentSession`: `messages.length === 0` のセッションは格上げされない（要件3.4）
   - `archiveCurrentSession` Eviction: 過去3件の状態で呼び出すと最古（`createdAt` 最小）が削除される（要件2.3）
