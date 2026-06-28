@@ -73,7 +73,7 @@
 
 - [ ] 4. Validation: テストの実装
 
-- [ ] 4.1 (P) /api/chat Route Handler の統合テストを書く
+- [x] 4.1 (P) /api/chat Route Handler の統合テストを書く
   - 未認証リクエスト（セッションなし）→ HTTP 401 を返すことをテストする
   - Gemini SDK をモックして、認証済みリクエスト → `ReadableStream` を含むレスポンス（HTTP 200）が返ることをテストする
   - Gemini SDK がレート制限エラーを返した場合 → HTTP 429 を返すことをテストする
