@@ -37,7 +37,7 @@
   - _Requirements: 1.2, 1.3, 1.4, 1.5, 2.2, 2.3, 3.1, 3.3, 5.1, 5.2, 6.1, 6.2, 6.3_
   - _Boundary: UseChat_
 
-- [ ] 2.3 (P) ChatMessage コンポーネントを実装する
+- [x] 2.3 (P) ChatMessage コンポーネントを実装する
   - `src/components/chat/chat-message.tsx` に `ChatMessage` コンポーネントを実装する（`'use client'` 指定必須：react-markdown が Client Component を要求）
   - `message.role === "user"` と `"assistant"` でバブルのスタイルを切り替える
   - AI メッセージ（`role: "assistant"`）は `react-markdown` + `remarkGfm` プラグインで Markdown レンダリングする
