@@ -5,7 +5,6 @@ import { useChat } from "@/hooks/use-chat";
 import { useSessionStorage } from "@/hooks/use-session-storage";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { ChatInput } from "@/components/chat/chat-input";
-import { LogoutButton } from "@/components/auth/logout-button";
 import { SessionDrawer } from "@/components/session/session-drawer";
 import { ReadonlyBanner } from "@/components/session/readonly-banner";
 import type { Session } from "@/types/session";
@@ -64,22 +63,13 @@ export default function ChatPage() {
       {/* ヘッダー */}
       <header className="flex items-center justify-between p-4 border-b">
         <h1 className="text-lg font-semibold">AI コーチ</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="rounded-md px-3 py-1.5 text-sm font-medium border border-gray-300 bg-white hover:bg-gray-50"
-          >
-            過去の会話
-          </button>
-          <button
-            onClick={handleNewChat}
-            disabled={isNewChatDisabled}
-            className="rounded-md px-3 py-1.5 text-sm font-medium border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            新しい会話
-          </button>
-          <LogoutButton />
-        </div>
+        <button
+          onClick={() => setIsDrawerOpen(true)}
+          aria-label="メニューを開く"
+          className="rounded-md p-2 text-gray-600 hover:bg-gray-100"
+        >
+          ☰
+        </button>
       </header>
 
       {/* 読み取り専用バナー */}
@@ -114,6 +104,8 @@ export default function ChatPage() {
           setViewingSession(session);
           setIsDrawerOpen(false);
         }}
+        onNewChat={handleNewChat}
+        isNewChatDisabled={isNewChatDisabled}
       />
     </div>
   );

@@ -190,3 +190,13 @@ export function useSessionStorage(): UseSessionStorageReturn {
     archiveCurrentSession,
   };
 }
+
+export function clearSessionStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(SESSIONS_KEY);
+    localStorage.removeItem(CURRENT_ID_KEY);
+  } catch {
+    // サイレント失敗
+  }
+}
