@@ -92,7 +92,13 @@ export default function ChatPage() {
 
       {/* 入力欄（読み取り専用モード中は非表示） */}
       {viewingSession === null && (
-        <ChatInput onSubmit={handleSendMessage} disabled={isStreaming} />
+        <ChatInput
+          onSubmit={handleSendMessage}
+          onImageSubmit={() => {
+            /* TODO: Task 4.1 で useChat.sendImage に接続 */
+          }}
+          disabled={isStreaming}
+        />
       )}
 
       {/* セッションドロワー */}
