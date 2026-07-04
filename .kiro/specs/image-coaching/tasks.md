@@ -72,7 +72,7 @@
   - _Requirements: 1.1, 3.1, 3.4, 4.1, 4.2_
 
 - [ ] 5. Validation — テストと検証
-- [ ] 5.1 `ChatInput` 写真機能のコンポーネントテスト
+- [x] 5.1 `ChatInput` 写真機能のコンポーネントテスト
   - 写真ボタンが表示され、クリックでファイルピッカーがトリガーされることを検証
   - 画像ファイル選択後にプレビュー状態へ遷移し、キャンセルで通常入力状態に戻ることを検証
   - `disabled=true` 時に写真ボタンが無効化されることを検証
@@ -80,21 +80,21 @@
   - テストが全項目 PASS する
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 6.2_
 
-- [ ] 5.2 `useChat.sendImage` フックテスト
+- [x] 5.2 `useChat.sendImage` フックテスト
   - `fetch` をモックし、`sendImage` 呼び出し後に `{role:"user", content:"[写真]", image:{...}}` が messages に追加されることを検証
   - ストリーミング完了後に `onStreamComplete` が最新 messages を引数に呼ばれることを検証
   - 429 エラー時に適切な日本語エラーメッセージが `error` state にセットされることを検証
   - テストが全項目 PASS する
   - _Requirements: 3.1, 3.3, 4.1, 6.1_
 
-- [ ] 5.3 `/api/chat` ルートのマルチモーダルテスト
+- [x] 5.3 `/api/chat` ルートのマルチモーダルテスト
   - `@google/genai` をモックし、`image` 付きリクエストで `sendMessageStream` に `inlineData` パーツが渡されることを検証
   - `message` と `image` 両方なしのリクエストで 400 を返すことを検証
   - `image.mimeType` が `image/` で始まらないリクエストで 400 を返すことを検証
   - テストが全項目 PASS する
   - _Requirements: 3.1, 6.1, 6.2_
 
-- [ ] 5.4 `use-session-storage` 画像除去テスト
+- [x] 5.4 `use-session-storage` 画像除去テスト
   - `image` フィールド付きメッセージを `saveCurrentSession` に渡した後、localStorage の JSON に `image` が含まれないことを検証
   - `image` フィールド付きメッセージを `archiveCurrentSession` に渡した後、localStorage の JSON に `image` が含まれないことを検証
   - テストが両ケースとも PASS する
