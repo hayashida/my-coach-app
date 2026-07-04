@@ -63,7 +63,7 @@
   - _Requirements: 5.1, 5.2_
 
 - [ ] 4. Integration — チャットページへの統合
-- [ ] 4.1 チャットページに画像送信フローを統合
+- [x] 4.1 チャットページに画像送信フローを統合
   - `ChatInput` に `onImageSubmit` コールバックを渡す
   - `handleSendImage(image: CompressedImage)` ハンドラを実装し、セッション ID 未初期化時の ID 生成と `useChat.sendImage(image)` 呼び出しを行う
   - 読み取り専用モード中は画像ボタンが含む `ChatInput` が非表示になる（既存の `viewingSession === null` 条件を共有）

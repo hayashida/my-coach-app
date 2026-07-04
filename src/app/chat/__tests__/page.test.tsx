@@ -36,22 +36,31 @@ jest.mock(
       isOpen,
       sessions,
       onSelectSession,
-      onClose,
+      onNewChat,
+      isNewChatDisabled,
     }: {
       isOpen: boolean;
       sessions: Session[];
       onSelectSession: (session: Session) => void;
       onClose: () => void;
-    }) =>
-      isOpen ? (
-        <div data-testid="drawer">
-          {sessions.map((s) => (
-            <button key={s.id} onClick={() => onSelectSession(s)}>
-              {s.id}
-            </button>
-          ))}
-        </div>
-      ) : null,
+      onNewChat: () => void;
+      isNewChatDisabled: boolean;
+    }) => (
+      <>
+        <button onClick={onNewChat} disabled={isNewChatDisabled}>
+          新しい会話
+        </button>
+        {isOpen && (
+          <div data-testid="drawer">
+            {sessions.map((s) => (
+              <button key={s.id} onClick={() => onSelectSession(s)}>
+                {s.id}
+              </button>
+            ))}
+          </div>
+        )}
+      </>
+    ),
   })
 );
 
@@ -82,7 +91,24 @@ jest.mock(
 jest.mock(
   "@/components/chat/chat-input",
   () => ({
-    ChatInput: () => <div data-testid="chat-input" />,
+    ChatInput: ({
+      onImageSubmit,
+    }: {
+      onImageSubmit?: (image: { data: string; mimeType: "image/jpeg" }) => void;
+    }) => (
+      <div data-testid="chat-input">
+        {onImageSubmit && (
+          <button
+            data-testid="image-submit-btn"
+            onClick={() =>
+              onImageSubmit({ data: "test-base64", mimeType: "image/jpeg" })
+            }
+          >
+            画像送信
+          </button>
+        )}
+      </div>
+    ),
   })
 );
 
@@ -135,7 +161,7 @@ function setupMocks(options: {
     archiveCurrentSession: jest.fn(),
   });
 
-  return { clearMessages, sendMessage };
+  return { clearMessages, sendMessage, sendImage };
 }
 
 // ─── テスト ────────────────────────────────────────────────
@@ -214,7 +240,7 @@ describe("ChatPage 統合テスト", () => {
       render(<ChatPage />);
 
       // ドロワーを開く
-      fireEvent.click(screen.getByRole("button", { name: "過去の会話" }));
+      fireEvent.click(screen.getByRole("button", { name: "メニューを開く" }));
 
       // ドロワー内のセッションボタン（id が表示される）をクリック
       await act(async () => {
@@ -239,7 +265,7 @@ describe("ChatPage 統合テスト", () => {
       render(<ChatPage />);
 
       // ドロワーを開く
-      fireEvent.click(screen.getByRole("button", { name: "過去の会話" }));
+      fireEvent.click(screen.getByRole("button", { name: "メニューを開く" }));
       expect(screen.getByTestId("drawer")).toBeTruthy();
 
       // セッション選択
@@ -275,7 +301,7 @@ describe("ChatPage 統合テスト", () => {
       render(<ChatPage />);
 
       // ドロワーを開いてセッション選択
-      fireEvent.click(screen.getByRole("button", { name: "過去の会話" }));
+      fireEvent.click(screen.getByRole("button", { name: "メニューを開く" }));
       await act(async () => {
         fireEvent.click(screen.getByRole("button", { name: "past-1" }));
       });
@@ -294,7 +320,7 @@ describe("ChatPage 統合テスト", () => {
       render(<ChatPage />);
 
       // ドロワーを開いてセッション選択
-      fireEvent.click(screen.getByRole("button", { name: "過去の会話" }));
+      fireEvent.click(screen.getByRole("button", { name: "メニューを開く" }));
       await act(async () => {
         fireEvent.click(screen.getByRole("button", { name: "past-1" }));
       });
@@ -316,7 +342,7 @@ describe("ChatPage 統合テスト", () => {
       render(<ChatPage />);
 
       // 読み取り専用モードに切り替え
-      fireEvent.click(screen.getByRole("button", { name: "過去の会話" }));
+      fireEvent.click(screen.getByRole("button", { name: "メニューを開く" }));
       await act(async () => {
         fireEvent.click(screen.getByRole("button", { name: "past-1" }));
       });
@@ -335,6 +361,26 @@ describe("ChatPage 統合テスト", () => {
 
       // 現在のメッセージが表示されている
       expect(screen.getByText("現在メッセージ")).toBeTruthy();
+    });
+  });
+
+  // ── onImageSubmit → useChat.sendImage 呼び出し ──
+
+  describe("onImageSubmit → useChat.sendImage 呼び出し（画像送信フロー）", () => {
+    it("onImageSubmit コールバックが useChat.sendImage を呼び出す", async () => {
+      const { sendImage } = setupMocks({ messages: [] });
+
+      render(<ChatPage />);
+
+      // ChatInput モックに埋め込んだ画像送信トリガーをクリック
+      await act(async () => {
+        fireEvent.click(screen.getByTestId("image-submit-btn"));
+      });
+
+      expect(sendImage).toHaveBeenCalledWith({
+        data: "test-base64",
+        mimeType: "image/jpeg",
+      });
     });
   });
 });

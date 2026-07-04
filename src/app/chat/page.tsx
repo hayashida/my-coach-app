@@ -8,6 +8,7 @@ import { ChatInput } from "@/components/chat/chat-input";
 import { SessionDrawer } from "@/components/session/session-drawer";
 import { ReadonlyBanner } from "@/components/session/readonly-banner";
 import type { Session } from "@/types/session";
+import type { CompressedImage } from "@/lib/image-compression";
 
 export default function ChatPage() {
   const { initialSessionData, saveCurrentSession, archiveCurrentSession, pastSessions } =
@@ -26,7 +27,7 @@ export default function ChatPage() {
   // ドロワー開閉状態
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const { messages, isStreaming, error, sendMessage, clearMessages } = useChat({
+  const { messages, isStreaming, error, sendMessage, sendImage, clearMessages } = useChat({
     initialMessages: initialSessionData?.messages ?? [],
     onStreamComplete: (msgs) => {
       if (currentSessionIdRef.current) {
@@ -46,6 +47,15 @@ export default function ChatPage() {
       setCurrentSessionId(id); // state は非同期更新
     }
     await sendMessage(text);
+  };
+
+  const handleSendImage = async (image: CompressedImage) => {
+    if (!currentSessionIdRef.current) {
+      const id = crypto.randomUUID();
+      currentSessionIdRef.current = id;
+      setCurrentSessionId(id);
+    }
+    await sendImage(image);
   };
 
   // 「新しい会話」disabled 条件
@@ -94,9 +104,7 @@ export default function ChatPage() {
       {viewingSession === null && (
         <ChatInput
           onSubmit={handleSendMessage}
-          onImageSubmit={() => {
-            /* TODO: Task 4.1 で useChat.sendImage に接続 */
-          }}
+          onImageSubmit={handleSendImage}
           disabled={isStreaming}
         />
       )}
