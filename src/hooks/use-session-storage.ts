@@ -102,18 +102,21 @@ export function useSessionStorage(): UseSessionStorageReturn {
     const sessions = readSessions();
     const existingIndex = sessions.findIndex((s) => s.id === sessionId);
 
+    // image フィールドを除去してから localStorage に書き込む（ADR-002: content: string 不変条件）
+    const persistedMessages = messages.map(({ role, content }) => ({ role, content }));
+
     if (existingIndex >= 0) {
       // 既存セッションの更新：createdAt は変更しない
       sessions[existingIndex] = {
         ...sessions[existingIndex],
-        messages,
+        messages: persistedMessages,
       };
     } else {
       // 新規セッションの作成：createdAt を設定
       sessions.push({
         id: sessionId,
         createdAt: Date.now(),
-        messages,
+        messages: persistedMessages,
       });
     }
 
@@ -152,18 +155,21 @@ export function useSessionStorage(): UseSessionStorageReturn {
     const sessions = readSessions();
     const existingIndex = sessions.findIndex((s) => s.id === sessionId);
 
+    // image フィールドを除去してから localStorage に書き込む（ADR-002: content: string 不変条件）
+    const persistedMessages = messages.map(({ role, content }) => ({ role, content }));
+
     if (existingIndex >= 0) {
       // 既存セッションを更新（messages を最新化、createdAt は保持）
       sessions[existingIndex] = {
         ...sessions[existingIndex],
-        messages,
+        messages: persistedMessages,
       };
     } else {
       // 新規として追加
       sessions.push({
         id: sessionId,
         createdAt: Date.now(),
-        messages,
+        messages: persistedMessages,
       });
     }
 

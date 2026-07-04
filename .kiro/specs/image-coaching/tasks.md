@@ -55,7 +55,7 @@
   - _Boundary: /api/chat route, SYSTEM_PROMPT_
   - _Requirements: 3.1, 3.2, 6.1, 6.2_
 
-- [ ] 3.2 (P) `use-session-storage` の保存時に画像データを除去
+- [x] 3.2 (P) `use-session-storage` の保存時に画像データを除去
   - `saveCurrentSession` 内で `messages.map(({ role, content }) => ({ role, content }))` により `image` フィールドを除去してから localStorage に書き込む
   - `archiveCurrentSession` でも同様に `image` フィールドを除去する
   - localStorage に書き込まれるメッセージに `image` フィールドが含まれない（ADR-002 の `content: string` 不変条件を維持）

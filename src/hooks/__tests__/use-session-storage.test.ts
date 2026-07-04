@@ -150,6 +150,26 @@ describe("saveCurrentSession", () => {
     );
     expect(sessions.filter((s) => s.id === "session-1")).toHaveLength(1);
   });
+
+  it("image フィールド付きメッセージを渡した後、localStorage の JSON に image が含まれない（要件5.1）", () => {
+    const msgWithImage: Message = {
+      role: "user",
+      content: "[写真]",
+      image: { data: "base64encodeddata", mimeType: "image/jpeg" },
+    };
+
+    const { result } = renderHook(() => useSessionStorage());
+
+    act(() => {
+      result.current.saveCurrentSession("session-img", [msgWithImage, MSG_ASSISTANT]);
+    });
+
+    const raw = getLocalStorageRaw(SESSIONS_KEY) ?? "[]";
+    expect(raw).not.toContain("image");
+    expect(raw).not.toContain("base64encodeddata");
+    const sessions: Session[] = JSON.parse(raw);
+    expect(sessions[0].messages[0]).toEqual({ role: "user", content: "[写真]" });
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -246,6 +266,29 @@ describe("archiveCurrentSession", () => {
 
     expect(result.current.pastSessions).toHaveLength(1);
     expect(result.current.pastSessions[0].id).toBe("session-current");
+  });
+
+  it("image フィールド付きメッセージを渡した後、localStorage の JSON に image が含まれない（要件5.2）", () => {
+    setLocalStorage(SESSIONS_KEY, []);
+    localStorage.setItem(CURRENT_ID_KEY, "session-archive-img");
+
+    const msgWithImage: Message = {
+      role: "user",
+      content: "[写真]",
+      image: { data: "archivebase64data", mimeType: "image/png" },
+    };
+
+    const { result } = renderHook(() => useSessionStorage());
+
+    act(() => {
+      result.current.archiveCurrentSession("session-archive-img", [msgWithImage]);
+    });
+
+    const raw = getLocalStorageRaw(SESSIONS_KEY) ?? "[]";
+    expect(raw).not.toContain("image");
+    expect(raw).not.toContain("archivebase64data");
+    const sessions: Session[] = JSON.parse(raw);
+    expect(sessions[0].messages[0]).toEqual({ role: "user", content: "[写真]" });
   });
 });
 
