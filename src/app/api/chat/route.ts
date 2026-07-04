@@ -4,6 +4,12 @@ import { GoogleGenAI } from "@google/genai";
 import { SYSTEM_PROMPT } from "@/lib/system-prompt";
 import type { Message } from "@/types/message";
 
+type ChatRequest = {
+  message?: string;
+  image?: { data: string; mimeType: string };
+  history: Message[];
+};
+
 export async function POST(request: NextRequest): Promise<Response> {
   const session = await auth();
   if (!session) {
@@ -11,12 +17,31 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   try {
-    const body = (await request.json()) as { message: string; history: Message[] };
-    const { message, history } = body;
+    const body = (await request.json()) as ChatRequest;
+    const { message, image, history } = body;
 
+    // バリデーション: message と image のどちらか一方が必須
+    if (!message && !image) {
+      return NextResponse.json(
+        { error: "message または image が必要です" },
+        { status: 400 }
+      );
+    }
+
+    // バリデーション: image.mimeType は image/ で始まる必要がある
+    if (image && !image.mimeType.startsWith("image/")) {
+      return NextResponse.json(
+        { error: "無効な mimeType です" },
+        { status: 400 }
+      );
+    }
+
+    // 履歴変換（image フィールドがある場合は inlineData パーツを使用）
     const geminiHistory = history.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
+      parts: m.image
+        ? [{ inlineData: { data: m.image.data, mimeType: m.image.mimeType } }]
+        : [{ text: m.content }],
     }));
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -26,7 +51,11 @@ export async function POST(request: NextRequest): Promise<Response> {
       config: { systemInstruction: SYSTEM_PROMPT },
     });
 
-    const stream = await chat.sendMessageStream({ message });
+    const stream = await chat.sendMessageStream({
+      message: image
+        ? [{ inlineData: { data: image.data, mimeType: image.mimeType } }]
+        : message!,
+    });
 
     const readableStream = new ReadableStream({
       async start(controller) {
@@ -45,9 +74,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     });
 
     return new Response(readableStream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-      },
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   } catch (error) {
     if (

@@ -28,7 +28,11 @@ describe("POST /api/chat", () => {
     }));
   });
 
-  function makeRequest(body: { message: string; history: Message[] }): NextRequest {
+  function makeRequest(body: {
+    message?: string;
+    image?: { data: string; mimeType: string };
+    history: Message[];
+  }): NextRequest {
     return new Request("http://localhost/api/chat", {
       method: "POST",
       body: JSON.stringify(body),
@@ -110,5 +114,52 @@ describe("POST /api/chat", () => {
     }));
     const res = await POST(makeRequest({ message: "テスト", history: [] }));
     expect(res.status).toBe(500);
+  });
+
+  test("image 付きリクエストで sendMessageStream に inlineData パーツが渡される", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockSendMessageStream = jest.fn().mockResolvedValue(
+      (async function* () {
+        yield { text: "画像コーチング返答" };
+      })()
+    );
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: mockSendMessageStream,
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const imagePayload = { data: "base64encodeddata", mimeType: "image/jpeg" };
+    const res = await POST(
+      makeRequest({ image: imagePayload, history: [] })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockSendMessageStream).toHaveBeenCalledWith({
+      message: [{ inlineData: { data: "base64encodeddata", mimeType: "image/jpeg" } }],
+    });
+  });
+
+  test("message と image の両方が未指定の場合 400 を返す", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+    const res = await POST(makeRequest({ history: [] }));
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body).toEqual({ error: "message または image が必要です" });
+  });
+
+  test("image.mimeType が image/ で始まらない場合 400 を返す", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+    const res = await POST(
+      makeRequest({
+        image: { data: "base64data", mimeType: "application/pdf" },
+        history: [],
+      })
+    );
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body).toEqual({ error: "無効な mimeType です" });
   });
 });
