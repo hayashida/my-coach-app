@@ -27,7 +27,7 @@
   - _Boundary: ChatInput_
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 6.2, 6.3_
 
-- [ ] 2.2 (P) ChatMessage に画像メッセージ表示を追加
+- [x] 2.2 (P) ChatMessage に画像メッセージ表示を追加
   - `message.image` が存在する場合、右寄せバブル内に `<img>` タグで写真を表示する（`src` は `data:{mimeType};base64,{data}` 形式）
   - `message.image === undefined` の場合は既存のテキストバブルを維持する（`[写真]` プレースホルダーのセッション復元時を含む）
   - 画像バブルがテキストバブルと同じ最大幅制約（最大 80%）で右寄せ表示される

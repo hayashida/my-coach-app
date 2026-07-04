@@ -22,7 +22,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
             : "bg-gray-100 text-gray-900"
         }`}
       >
-        {isUser ? (
+        {isUser && message.image ? (
+          <img
+            src={`data:${message.image.mimeType};base64,${message.image.data}`}
+            alt="送信した写真"
+            className="max-w-full rounded-lg"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              target.style.display = "none";
+              const fallback = document.createElement("span");
+              fallback.textContent = "[写真の表示に失敗しました]";
+              target.parentNode?.insertBefore(fallback, target.nextSibling);
+            }}
+          />
+        ) : isUser ? (
           <span className="whitespace-pre-wrap">{message.content}</span>
         ) : (
           <Markdown
