@@ -276,6 +276,116 @@ describe("useChat", () => {
     });
   });
 
+  describe("sendImage", () => {
+    const mockImage = { data: "base64encodeddata", mimeType: "image/jpeg" as const };
+
+    it("sendImage 呼び出し後に messages に {role:'user', content:'[写真]', image:{...}} が追加される（要件 3.1）", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("画像の説明"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await act(async () => {
+        await result.current.sendImage(mockImage);
+      });
+
+      expect(result.current.messages).toHaveLength(2);
+      expect(result.current.messages[0]).toEqual({
+        role: "user",
+        content: "[写真]",
+        image: { data: "base64encodeddata", mimeType: "image/jpeg" },
+      });
+      expect(result.current.messages[1]).toEqual({
+        role: "assistant",
+        content: "画像の説明",
+      });
+    });
+
+    it("sendImage ストリーミング完了後に onStreamComplete が最新 messages を引数に呼ばれる（要件 3.3）", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("画像の返答"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const onStreamComplete = jest.fn();
+      const { result } = renderHook(() => useChat({ onStreamComplete }));
+
+      await act(async () => {
+        await result.current.sendImage(mockImage);
+      });
+
+      expect(onStreamComplete).toHaveBeenCalledTimes(1);
+      const calledWith = onStreamComplete.mock.calls[0][0];
+      expect(calledWith).toHaveLength(2);
+      expect(calledWith[0]).toEqual({
+        role: "user",
+        content: "[写真]",
+        image: { data: "base64encodeddata", mimeType: "image/jpeg" },
+      });
+      expect(calledWith[1]).toEqual({ role: "assistant", content: "画像の返答" });
+    });
+
+    it("sendImage で 429 エラー時に適切な日本語エラーメッセージが error state にセットされる（要件 4.1, 4.2）", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 429,
+        body: null,
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await act(async () => {
+        await result.current.sendImage(mockImage);
+      });
+
+      expect(result.current.error).toBe(
+        "リクエスト制限に達しました。しばらく待ってから再試行してください。"
+      );
+      expect(result.current.isStreaming).toBe(false);
+    });
+
+    it("sendImage で POST body に image と history が含まれる（要件 3.3）", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await act(async () => {
+        await result.current.sendImage(mockImage);
+      });
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0];
+      const body = JSON.parse(callArgs[1].body as string);
+      expect(body.image).toEqual({ data: "base64encodeddata", mimeType: "image/jpeg" });
+      expect(body.history).toEqual([]);
+    });
+  });
+
   describe("ストリーミング状態管理", () => {
     it("送信中は isStreaming が true になり、完了後は false になる（要件 5.1 / 5.2）", async () => {
       // ストリームの読み取りを一時停止させ、isStreaming === true の状態を観測できるようにする

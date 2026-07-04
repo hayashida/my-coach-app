@@ -34,7 +34,7 @@
   - _Boundary: ChatMessage_
   - _Requirements: 2.1, 2.2, 5.1_
 
-- [ ] 2.3 (P) useChat フックに `sendImage` 関数を追加
+- [x] 2.3 (P) useChat フックに `sendImage` 関数を追加
   - `sendImage(image: CompressedImage): Promise<void>` を実装し、`UseChatReturn` インターフェースに追加する
   - 呼び出し時にユーザーメッセージ `{role: "user", content: "[写真]", image: {data, mimeType}}` を messages に追加する
   - `/api/chat` に `{image: {data, mimeType}, history: historySnapshot}` を POST し、ストリーミング返答を既存の `sendMessage` と同様に受信・表示する

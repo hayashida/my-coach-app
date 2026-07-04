@@ -117,11 +117,14 @@ function setupMocks(options: {
   const clearMessages = jest.fn();
   const sendMessage = jest.fn().mockResolvedValue(undefined);
 
+  const sendImage = jest.fn().mockResolvedValue(undefined);
+
   mockUseChat.mockReturnValue({
     messages: options.messages ?? [],
     isStreaming: options.isStreaming ?? false,
     error: null,
     sendMessage,
+    sendImage,
     clearMessages,
   });
 
