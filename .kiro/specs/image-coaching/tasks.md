@@ -8,7 +8,7 @@
   - 既存の全テストが `tsc --noEmit` でエラーゼロで通る
   - _Requirements: 1.3, 2.1, 4.2, 5.1_
 
-- [ ] 1.2 `ImageCompression` ユーティリティを実装
+- [x] 1.2 `ImageCompression` ユーティリティを実装
   - Canvas API（`createImageBitmap` → canvas `drawImage` → `toBlob`）で入力画像を最大 1024px・JPEG 0.7 品質に圧縮して base64 文字列（プレフィックスなし）を返す `compressImage` 関数を実装する
   - MIME タイプが `image/*` 以外の場合は日本語エラーメッセージとともにエラーをスローする
   - 単体テスト（`@jest-environment jsdom`、Canvas API をモック）: 正常圧縮フローで `CompressedImage` が返ること・非画像ファイル入力時にエラーがスローされることを検証し、テストが PASS する
