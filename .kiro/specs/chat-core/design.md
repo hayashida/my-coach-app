@@ -105,6 +105,7 @@ graph TB
 | Frontend | React 19 / Next.js 16 | チャット UI / クライアント状態 | 既存スタック |
 | State Management | Custom `useChat` hook | ストリーミング状態・メッセージ管理 | Vercel AI SDK 不使用（後述） |
 | Markdown | react-markdown 10.1.0 + remark-gfm | AI 返答レンダリング | 'use client' 必須 |
+| 数式レンダリング | remark-math 6.0.0 + rehype-katex 7.0.1 | インライン/ブロック数式のレンダリング | KaTeX CSS を読み込む必要あり |
 | AI API | @google/genai 2.10.0 | Gemini 2.0 Flash 呼び出し | 旧 @google/generative-ai は廃止 |
 | Streaming | Web Streams API（ReadableStream） | Route Handler → クライアント | Edge Runtime 不可（Node.js Runtime 使用）|
 | Auth | next-auth v5 `auth()` | Route Handler でのセッション確認 | 既存スタック |
@@ -208,11 +209,13 @@ sequenceDiagram
 | 3.2 | コーチング動作 | system-prompt.ts, /api/chat | SYSTEM_PROMPT 定数 |
 | 3.3 | リアルタイムストリーミング表示 | useChat | ReadableStream 受信ループ |
 | 4.1 | Markdown レンダリング | ChatMessage | react-markdown |
+| 4.2 | 数式レンダリング（インライン/ブロック） | ChatMessage | remark-math + rehype-katex |
 | 5.1 | 生成中は disabled | useChat, ChatInput | isStreaming → disabled prop |
 | 5.2 | 完了後に操作可能 | useChat | isStreaming = false |
 | 6.1 | レート制限エラーメッセージ | useChat, /api/chat | 429 → error state |
-| 6.2 | その他エラーメッセージ | useChat, /api/chat | 500 → error state |
-| 6.3 | エラー後に入力復帰 | useChat | finally: isStreaming = false |
+| 6.2 | 認証セッション無効時の再ログイン案内 | useChat | 401 → getErrorMessage → error state |
+| 6.3 | その他エラーメッセージ | useChat, /api/chat | 500 → error state |
+| 6.4 | エラー後に入力復帰 | useChat | finally: isStreaming = false |
 
 ## Components and Interfaces
 
@@ -435,8 +438,8 @@ export function useChat(): UseChatReturn;
 
 | Field | Detail |
 |-------|--------|
-| Intent | ユーザー/AI メッセージのバブル表示と Markdown レンダリング |
-| Requirements | 2.1, 4.1 |
+| Intent | ユーザー/AI メッセージのバブル表示と Markdown/数式レンダリング |
+| Requirements | 2.1, 4.1, 4.2 |
 
 ```typescript
 // src/components/chat/chat-message.tsx
@@ -447,7 +450,7 @@ interface ChatMessageProps {
 
 - `'use client'` 指定必須（react-markdown が Client Component を要求）
 - `message.role === "user"` と `"assistant"` でバブルスタイルを切り替え
-- AI メッセージは `react-markdown` + `remarkGfm` でレンダリング
+- AI メッセージは `react-markdown` + `remarkGfm` + `remarkMath`/`rehypeKatex` でレンダリング（`remarkMath` がインライン `$...$` / ブロック `$$...$$` 記法を解析し、`rehypeKatex` が整形された数式表記に変換する）
 - ユーザーメッセージはプレーンテキスト（XSS を避けるため Markdown 非適用）
 
 #### ChatInput（プレゼンテーション）
@@ -518,17 +521,20 @@ export interface Message {
 
 | エラー | HTTP | ユーザー向けメッセージ | UI 復帰 |
 |--------|------|----------------------|---------|
-| 未認証（セッションなし） | 401 | 「再度ログインしてください」 | isStreaming = false |
-| レート制限（Gemini 429） | 429 | 「リクエストが多すぎます。しばらく待ってから再試行してください」 | isStreaming = false |
-| その他 API エラー | 500 | 「エラーが発生しました。もう一度試してください」 | isStreaming = false |
-| ストリーム中断 | — | 「接続が途切れました。もう一度試してください」 | isStreaming = false |
+| 認証セッション無効（要件 6.2） | 401 | 「セッションが切れました。再度ログインしてください。」 | isStreaming = false |
+| レート制限（Gemini 429） | 429 | 「リクエスト制限に達しました。しばらく待ってから再試行してください。」 | isStreaming = false |
+| その他 API エラー | 500 | 「エラーが発生しました。もう一度お試しください。」 | isStreaming = false |
+| ストリーム中断（fetch 例外） | — | 「エラーが発生しました。もう一度お試しください。」 | isStreaming = false |
+
+`getErrorMessage(status)`（`src/hooks/use-chat.ts`）が HTTP ステータスコードからユーザー向けメッセージを一元的に決定する。
 
 ## Testing Strategy
 
 ### Unit Tests
 
 - `useChat.sendMessage`: 空入力ガード（要件 1.5）— `messages` が更新されないことを確認
-- `useChat.sendMessage`: エラーレスポンス（401/429/500）→ `error` 状態と `isStreaming = false` を確認（要件 6.1, 6.2, 6.3）
+- `useChat.sendMessage`: エラーレスポンス（401/429/500）→ `error` 状態と `isStreaming = false` を確認（要件 6.1, 6.2, 6.3, 6.4）
+- `ChatMessage`: インライン数式（`$...$`）・ブロック数式（`$$...$$`）が KaTeX でレンダリングされることを確認（要件 4.2）
 - `useChat`: ストリーミング中の `isStreaming` 状態管理（要件 5.1, 5.2）
 
 ### Integration Tests

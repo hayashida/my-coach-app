@@ -4,11 +4,18 @@
 import { render, screen } from "@testing-library/react";
 import { ChatMessage } from "@/components/chat/chat-message";
 import type { Message } from "@/types/message";
+import remarkMathModule from "remark-math";
+import rehypeKatexModule from "rehype-katex";
 
-// react-markdown は jsdom 環境では動作しないためモック
+// react-markdown は jsdom 環境では動作しないためモックしつつ、
+// remarkPlugins/rehypePlugins の props をキャプチャして検証可能にする
+const markdownPropsBox: { current?: Record<string, unknown> } = {};
 jest.mock("react-markdown", () => ({
   __esModule: true,
-  default: ({ children }: { children: string }) => <span>{children}</span>,
+  default: (props: { children: string } & Record<string, unknown>) => {
+    markdownPropsBox.current = props;
+    return <span>{props.children}</span>;
+  },
 }));
 jest.mock("remark-gfm", () => ({ __esModule: true, default: () => {} }));
 jest.mock("remark-math", () => ({ __esModule: true, default: () => {} }));
@@ -65,5 +72,19 @@ describe("ChatMessage", () => {
     render(<ChatMessage message={message} />);
 
     expect(screen.getByText("お役に立てます")).toBeTruthy();
+  });
+
+  // テスト 4: 数式レンダリング配線の検証（要件 4.2）
+  it("アシスタントメッセージのレンダリングで remarkMath/rehypeKatex が渡される", () => {
+    const message: Message = {
+      role: "assistant",
+      content: "$x^2$ を解いてみよう",
+    };
+    render(<ChatMessage message={message} />);
+
+    const remarkPlugins = markdownPropsBox.current?.remarkPlugins as unknown[];
+    const rehypePlugins = markdownPropsBox.current?.rehypePlugins as unknown[];
+    expect(remarkPlugins).toContain(remarkMathModule);
+    expect(rehypePlugins).toContain(rehypeKatexModule);
   });
 });

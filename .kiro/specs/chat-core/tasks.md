@@ -19,6 +19,7 @@
 - [x] 2. Core: バックエンド・フロントエンドコンポーネントの並列実装
 
 - [x] 2.1 (P) /api/chat Route Handler を実装する
+  - 認証セッション無効時（401）は Route Handler が `{ error: "Unauthorized" }` を返し、`useChat` 側で再ログインを促すメッセージに変換する（要件 6.2）
   - `src/app/api/chat/route.ts` に POST エンドポイントを作成する（Node.js Runtime のみ対応、`export const runtime = "edge"` は設定しない）
   - `auth()` でセッションを確認し、未認証の場合は `{ error: "Unauthorized" }` と HTTP 401 を返す（`/api` パスは Middleware の除外対象のため、Route Handler 内での認証確認が必須）
   - リクエストボディから `{ message: string, history: Message[] }` を取得し、`history` の `role` を `"assistant" → "model"` に変換して Gemini の history 形式にマッピングする
@@ -32,18 +33,18 @@
 - [x] 2.2 (P) useChat カスタムフックを実装する
   - `src/hooks/use-chat.ts` に `useChat` フックを実装する（`messages: Message[]`, `isStreaming: boolean`, `error: string | null`, `sendMessage: (text: string) => Promise<void>` を返す）
   - `sendMessage` の動作: ①テキストが空なら即リターン（要件 1.5） ②呼び出し時点の `messages` を `historySnapshot` に保存する（history 二重送信防止） ③`messages` に `{ role: "user", content: text }` を追加 ④`isStreaming = true`, `error = null` ⑤`messages` に `{ role: "assistant", content: "" }` を追加 ⑥`POST /api/chat` を `{ message: text, history: historySnapshot }` で呼び出す ⑦`response.body` を `ReadableStream` として読み取り、チャンクを最後の assistant メッセージの `content` に追記 ⑧完了後 `isStreaming = false`
-  - HTTP エラーレスポンス（401/429/500）受信時は `error` に適切な日本語メッセージを設定し `isStreaming = false` にする（要件 6.1, 6.2, 6.3）
+  - HTTP エラーレスポンス（401/429/500）受信時は `error` に適切な日本語メッセージを設定し `isStreaming = false` にする（`getErrorMessage(status)` で一元管理。401 は「セッションが切れました。再度ログインしてください。」— 要件 6.2）
   - `npm run build` でビルドが成功する
-  - _Requirements: 1.2, 1.3, 1.4, 1.5, 2.2, 2.3, 3.1, 3.3, 5.1, 5.2, 6.1, 6.2, 6.3_
+  - _Requirements: 1.2, 1.3, 1.4, 1.5, 2.2, 2.3, 3.1, 3.3, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4_
   - _Boundary: UseChat_
 
 - [x] 2.3 (P) ChatMessage コンポーネントを実装する
   - `src/components/chat/chat-message.tsx` に `ChatMessage` コンポーネントを実装する（`'use client'` 指定必須：react-markdown が Client Component を要求）
   - `message.role === "user"` と `"assistant"` でバブルのスタイルを切り替える
-  - AI メッセージ（`role: "assistant"`）は `react-markdown` + `remarkGfm` プラグインで Markdown レンダリングする
+  - AI メッセージ（`role: "assistant"`）は `react-markdown` + `remarkGfm`（GFM）+ `remarkMath`/`rehypeKatex`（インライン `$...$` / ブロック `$$...$$` 数式）プラグインでレンダリングする
   - ユーザーメッセージ（`role: "user"`）はプレーンテキストとして表示する（XSS 対策）
   - `npm run build` でコンポーネントがエラーなくビルドできる
-  - _Requirements: 2.1, 4.1_
+  - _Requirements: 2.1, 4.1, 4.2_
   - _Boundary: ChatMessage_
 
 - [x] 2.4 (P) ChatInput コンポーネントを実装する
@@ -78,18 +79,18 @@
   - Gemini SDK をモックして、認証済みリクエスト → `ReadableStream` を含むレスポンス（HTTP 200）が返ることをテストする
   - Gemini SDK がレート制限エラーを返した場合 → HTTP 429 を返すことをテストする
   - 3つのテストケースがすべて pass する
-  - _Requirements: 3.1, 3.3, 6.1, 6.2_
+  - _Requirements: 3.1, 3.3, 6.1, 6.2, 6.3_
   - _Boundary: ChatRoute_
 
 - [x] 4.2 (P) useChat フックの単体テストを書く
   - `fetch` をモックして以下をテストする:
     - 空文字列の `sendMessage("")` → fetch が呼ばれない（要件 1.5）
-    - fetch が HTTP 401 → `error` に適切なメッセージが設定され、`isStreaming` が `false` になる（要件 6.1, 6.3）
-    - fetch が HTTP 429 → `error` に適切なメッセージが設定され、`isStreaming` が `false` になる（要件 6.1, 6.3）
-    - fetch が HTTP 500 → `error` に適切なメッセージが設定され、`isStreaming` が `false` になる（要件 6.2, 6.3）
+    - fetch が HTTP 401 → `error` に「セッションが切れました。再度ログインしてください。」が設定され、`isStreaming` が `false` になる（要件 6.2, 6.4）
+    - fetch が HTTP 429 → `error` に適切なメッセージが設定され、`isStreaming` が `false` になる（要件 6.1, 6.4）
+    - fetch が HTTP 500 → `error` に適切なメッセージが設定され、`isStreaming` が `false` になる（要件 6.3, 6.4）
     - ストリーミング中は `isStreaming === true`、完了後は `isStreaming === false` になる（要件 5.1, 5.2）
   - テストケースがすべて pass する
-  - _Requirements: 1.5, 5.1, 5.2, 6.1, 6.2, 6.3_
+  - _Requirements: 1.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4_
   - _Boundary: UseChat_
 
 - [x]* 4.3 (P) ChatInput のキーボード動作テストを書く
@@ -99,3 +100,10 @@
   - テストケースがすべて pass する
   - _Requirements: 1.3, 1.4_
   - _Boundary: ChatInput_
+
+- [x] 4.4 (P) ChatMessage の数式レンダリング配線を検証するテストを書く
+  - 既存の `chat-message.test.tsx` は `react-markdown` を丸ごとモックしており、`remarkMath`/`rehypeKatex` が実際に渡されているかを検証していない
+  - `react-markdown` のモックを `remarkPlugins`/`rehypePlugins` の props をキャプチャする形に変更し、AI メッセージ（`role: "assistant"`）のレンダリング時に `remarkPlugins` に `remarkMath`、`rehypePlugins` に `rehypeKatex` が含まれることを検証する
+  - テストケースが pass する
+  - _Requirements: 4.2_
+  - _Boundary: ChatMessage_
