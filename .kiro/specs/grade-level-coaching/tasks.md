@@ -66,7 +66,7 @@
   - _Depends: 2.1, 2.3_
 
 - [ ] 4. Validation — エンドツーエンドの動作確認
-- [ ] 4.1 学年レベル設定からチャット応答までのゴールデンパスをエンドツーエンドで確認する
+- [x] 4.1 学年レベル設定からチャット応答までのゴールデンパスをエンドツーエンドで確認する
   - 設定画面から学年レベルを変更して保存し、チャット画面でメッセージを送信すると、変更後の学年レベルに応じた指示でAIコーチが応答することを確認する
   - 学年レベル未設定の初回利用時、中学生向けの説明でAIコーチが応答することを確認する
   - _Requirements: 2.1, 2.2, 2.3, 3.1, 3.2, 3.3_
@@ -80,4 +80,5 @@
 ## Implementation Notes
 
 - Task 2.3: `UseChatOptions.gradeLevel` は design.md の型定義（必須）と異なり、意図的に任意（`gradeLevel?: GradeLevel`）として実装した。理由は `ChatPage`（タスク3.2の担当範囲）がまだ `gradeLevel` を渡していないため、必須にすると既存呼び出し箇所の型エラーになるため。タスク3.2で `useGradeLevel` の値を実際に渡すよう配線した時点で、実質的に常に値が渡される状態になる。タスク3.2実装時は、このオプショナル設計を前提にワイヤリングを忘れないよう注意すること。
+- Task 4.1: `jest.setup.js` に `Headers`/`Request`/`Response` の簡易ポリフィルを追加し、jsdom環境で実際の `/api/chat` route.ts の `POST` ハンドラを直接呼び出せるようにした（`route.test.ts` と同様に `@/auth`・`@google/genai` のみモック）。レビューで、この簡易実装は大文字小文字を区別しない `Headers.get()` や `.append()` 未対応など仕様非準拠な点が指摘された（現状のテストには影響しないため非ブロッキング）。将来ヘッダーの大文字小文字やcookie等を扱うテストを追加する際は、依存関係に既に存在する `undici` の `Headers`/`Request`/`Response`（仕様準拠）へ置き換えることを検討すること。
 - Task 3.1: `session-drawer.test.tsx` は `next-auth`/`@auth/core` の ESM import が原因で、以前はスイート全体がロード時にクラッシュしテストが1つも実行されていなかった（`jest.mock("@/components/auth/actions", ...)` で解消）。このモック追加により隠れていた既存バグ（Dialog.Popupのスタイルテストが `left-0` を期待していたが実装は `right-0`。コミット `a07592b` でドロワーが右寄せに変更された際にテストが未更新だった）が可視化されたため、`right-0` に修正して解消済み。他のタスクで `session-drawer.test.tsx` に触れる場合、このモックパターン（`@/components/auth/actions` のモック）を踏襲すること。
