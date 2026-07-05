@@ -10,6 +10,7 @@
  *   - 4.2: 読み取り専用モード中は ChatInput が非表示
  *   - 4.3: 読み取り専用モード中は ReadonlyBanner が表示
  *   - 3.3 (grade-level-coaching): 保存済みの学年レベルを取得し useChat に渡す。変更後は新しい学年レベルが使われる
+ *   - 6.3 (grade-level-coaching): 保存済みの応答レベルを取得し useChat に渡す。変更後は新しい応答レベルが使われる
  */
 
 import React from "react";
@@ -17,10 +18,12 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import { useChat } from "@/hooks/use-chat";
 import { useSessionStorage } from "@/hooks/use-session-storage";
 import { useGradeLevel } from "@/hooks/use-grade-level";
+import { useResponseLevel } from "@/hooks/use-response-level";
 import ChatPage from "@/app/chat/page";
 import type { Session } from "@/types/session";
 import type { Message } from "@/types/message";
 import type { GradeLevel } from "@/types/grade-level";
+import type { ResponseLevel } from "@/types/response-level";
 
 // ─── モック定義 ───────────────────────────────────────────
 
@@ -34,6 +37,10 @@ jest.mock("@/hooks/use-session-storage", () => ({
 
 jest.mock("@/hooks/use-grade-level", () => ({
   useGradeLevel: jest.fn(),
+}));
+
+jest.mock("@/hooks/use-response-level", () => ({
+  useResponseLevel: jest.fn(),
 }));
 
 jest.mock(
@@ -133,6 +140,8 @@ const mockUseSessionStorage =
   useSessionStorage as jest.MockedFunction<typeof useSessionStorage>;
 const mockUseGradeLevel =
   useGradeLevel as jest.MockedFunction<typeof useGradeLevel>;
+const mockUseResponseLevel =
+  useResponseLevel as jest.MockedFunction<typeof useResponseLevel>;
 
 // ─── ヘルパー ──────────────────────────────────────────────
 
@@ -149,6 +158,7 @@ function setupMocks(options: {
   isStreaming?: boolean;
   pastSessions?: Session[];
   gradeLevel?: GradeLevel;
+  responseLevel?: ResponseLevel;
 }) {
   const clearMessages = jest.fn();
   const sendMessage = jest.fn().mockResolvedValue(undefined);
@@ -177,7 +187,13 @@ function setupMocks(options: {
     setGradeLevel,
   });
 
-  return { clearMessages, sendMessage, sendImage, setGradeLevel };
+  const setResponseLevel = jest.fn();
+  mockUseResponseLevel.mockReturnValue({
+    responseLevel: options.responseLevel ?? "basic",
+    setResponseLevel,
+  });
+
+  return { clearMessages, sendMessage, sendImage, setGradeLevel, setResponseLevel };
 }
 
 // ─── テスト ────────────────────────────────────────────────
@@ -440,6 +456,50 @@ describe("ChatPage 統合テスト", () => {
 
       expect(mockUseChat).toHaveBeenLastCalledWith(
         expect.objectContaining({ gradeLevel: "high_school" })
+      );
+    });
+  });
+
+  // ── 応答レベルの取得と useChat への反映（要件6.3） ──
+
+  describe("応答レベルの取得と useChat への反映（要件6.3）", () => {
+    it("useResponseLevel が返す応答レベル（advanced）が useChat に渡される", () => {
+      setupMocks({ messages: [], responseLevel: "advanced" });
+
+      render(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenCalledWith(
+        expect.objectContaining({ responseLevel: "advanced" })
+      );
+    });
+
+    it("useResponseLevel が返す応答レベル（basic）が useChat に渡される", () => {
+      setupMocks({ messages: [], responseLevel: "basic" });
+
+      render(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenCalledWith(
+        expect.objectContaining({ responseLevel: "basic" })
+      );
+    });
+
+    it("設定画面で応答レベルを変更後にチャット画面へ戻ると、変更後の応答レベルが useChat に渡される（要件6.3）", () => {
+      setupMocks({ messages: [], responseLevel: "basic" });
+
+      const { rerender } = render(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenLastCalledWith(
+        expect.objectContaining({ responseLevel: "basic" })
+      );
+
+      // 設定画面で advanced に変更してチャット画面へ戻った状態を模擬
+      // （ChatPage 再マウント時に useResponseLevel が新しい保存値を返す）
+      setupMocks({ messages: [], responseLevel: "advanced" });
+
+      rerender(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenLastCalledWith(
+        expect.objectContaining({ responseLevel: "advanced" })
       );
     });
   });
