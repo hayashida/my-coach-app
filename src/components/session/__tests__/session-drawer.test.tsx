@@ -123,17 +123,17 @@ describe("SessionDrawer", () => {
     });
   });
 
-  describe("学年レベル設定画面への導線（要件2.1）", () => {
-    it("「学年レベル設定」メニュー項目が /settings へのリンクとして表示される（要件2.1）", () => {
+  describe("学年レベル・応答レベル設定画面への導線（要件2.1）", () => {
+    it("「学年レベル・応答レベル設定」メニュー項目が /settings へのリンクとして表示される（要件2.1）", () => {
       render(<SessionDrawer {...defaultProps} />);
-      const settingsLink = screen.getByRole("link", { name: "学年レベル設定" });
+      const settingsLink = screen.getByRole("link", { name: "学年レベル・応答レベル設定" });
       expect(settingsLink.getAttribute("href")).toBe("/settings");
     });
 
-    it("「学年レベル設定」を選択するとドロワーが閉じる", () => {
+    it("「学年レベル・応答レベル設定」を選択するとドロワーが閉じる", () => {
       const onClose = jest.fn();
       render(<SessionDrawer {...defaultProps} onClose={onClose} />);
-      fireEvent.click(screen.getByRole("link", { name: "学年レベル設定" }));
+      fireEvent.click(screen.getByRole("link", { name: "学年レベル・応答レベル設定" }));
       expect(onClose).toHaveBeenCalledTimes(1);
     });
   });

@@ -76,7 +76,7 @@ export function SessionDrawer({
               onClick={onClose}
               className="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-t border-gray-200 text-sm text-gray-700"
             >
-              学年レベル設定
+              学年レベル・応答レベル設定
             </Link>
             <button
               type="button"
