@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from "react";
+import Link from "next/link";
 import { Dialog } from "@base-ui/react/dialog";
 import type { Session } from "@/types/session";
 import { SessionListItem } from "@/components/session/session-list-item";
@@ -70,6 +71,13 @@ export function SessionDrawer({
                 ))
               )}
             </div>
+            <Link
+              href="/settings"
+              onClick={onClose}
+              className="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-t border-gray-200 text-sm text-gray-700"
+            >
+              学年レベル設定
+            </Link>
             <button
               type="button"
               onClick={handleLogout}

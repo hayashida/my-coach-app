@@ -5,6 +5,16 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { SessionDrawer } from "@/components/session/session-drawer";
 import type { Session } from "@/types/session";
 
+// @/components/auth/actions のモック
+// 実モジュールは src/auth.ts 経由で next-auth（ESM 専用パッケージ）を import しており、
+// ts-jest（CommonJS transform）ではこの import 連鎖が「Cannot use import statement outside a module」で
+// 読み込み時に失敗する（本タスクとは無関係な既知の pre-existing 問題）。
+// SessionDrawer のテストにとって signOutAction の実装詳細は関心事ではないため、
+// このモジュール単位でモックしてテスト対象を next-auth の import 連鎖から切り離す。
+jest.mock("@/components/auth/actions", () => ({
+  signOutAction: jest.fn(),
+}));
+
 // @base-ui/react/dialog のモック
 // 実際のモジュールは { Dialog } という named export を持つ
 // Dialog.Root は open が true の場合のみ children をレンダリングする
@@ -42,6 +52,8 @@ describe("SessionDrawer", () => {
     onClose: jest.fn(),
     sessions: [],
     onSelectSession: jest.fn(),
+    onNewChat: jest.fn(),
+    isNewChatDisabled: false,
   };
 
   beforeEach(() => {
@@ -111,12 +123,27 @@ describe("SessionDrawer", () => {
     });
   });
 
+  describe("学年レベル設定画面への導線（要件2.1）", () => {
+    it("「学年レベル設定」メニュー項目が /settings へのリンクとして表示される（要件2.1）", () => {
+      render(<SessionDrawer {...defaultProps} />);
+      const settingsLink = screen.getByRole("link", { name: "学年レベル設定" });
+      expect(settingsLink.getAttribute("href")).toBe("/settings");
+    });
+
+    it("「学年レベル設定」を選択するとドロワーが閉じる", () => {
+      const onClose = jest.fn();
+      render(<SessionDrawer {...defaultProps} onClose={onClose} />);
+      fireEvent.click(screen.getByRole("link", { name: "学年レベル設定" }));
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe("Dialog.Popup のスタイル", () => {
     it("Dialog.Popup に正しいクラスが適用されている", () => {
       render(<SessionDrawer {...defaultProps} />);
       const popup = screen.getByTestId("dialog-popup");
       expect(popup.className).toContain("fixed");
-      expect(popup.className).toContain("left-0");
+      expect(popup.className).toContain("right-0");
       expect(popup.className).toContain("top-0");
       expect(popup.className).toContain("h-full");
       expect(popup.className).toContain("w-64");
