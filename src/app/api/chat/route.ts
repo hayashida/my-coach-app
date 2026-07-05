@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { GoogleGenAI } from "@google/genai";
-import { SYSTEM_PROMPT } from "@/lib/system-prompt";
+import { buildSystemPrompt } from "@/lib/system-prompt";
+import { DEFAULT_GRADE_LEVEL, isGradeLevel } from "@/types/grade-level";
 import type { Message } from "@/types/message";
 
 type ChatRequest = {
   message?: string;
   image?: { data: string; mimeType: string };
   history: Message[];
+  gradeLevel?: string;
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -18,7 +20,12 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   try {
     const body = (await request.json()) as ChatRequest;
-    const { message, image, history } = body;
+    const { message, image, history, gradeLevel } = body;
+
+    // 学年レベルの検証: 未指定・不正値はエラーにせず既定値にフォールバックする
+    const validatedGradeLevel = isGradeLevel(gradeLevel)
+      ? gradeLevel
+      : DEFAULT_GRADE_LEVEL;
 
     // バリデーション: message と image のどちらか一方が必須
     if (!message && !image) {
@@ -48,7 +55,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     const chat = ai.chats.create({
       model: "gemini-3.1-flash-lite",
       history: geminiHistory,
-      config: { systemInstruction: SYSTEM_PROMPT },
+      config: { systemInstruction: buildSystemPrompt(validatedGradeLevel) },
     });
 
     const stream = await chat.sendMessageStream({

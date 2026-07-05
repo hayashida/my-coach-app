@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { GoogleGenAI } from "@google/genai";
 import type { NextRequest } from "next/server";
 import type { Message } from "@/types/message";
+import { buildSystemPrompt } from "@/lib/system-prompt";
 
 jest.mock("@/auth", () => ({
   auth: jest.fn(),
@@ -32,6 +33,7 @@ describe("POST /api/chat", () => {
     message?: string;
     image?: { data: string; mimeType: string };
     history: Message[];
+    gradeLevel?: string;
   }): NextRequest {
     return new Request("http://localhost/api/chat", {
       method: "POST",
@@ -161,5 +163,107 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body).toEqual({ error: "無効な mimeType です" });
+  });
+
+  test("gradeLevel: high_school の場合、高校生向け systemInstruction が Gemini に渡される", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({ message: "テスト", history: [], gradeLevel: "high_school" })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: { systemInstruction: buildSystemPrompt("high_school") },
+      })
+    );
+  });
+
+  test("gradeLevel: junior_high の場合、中学生向け systemInstruction が Gemini に渡される", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({ message: "テスト", history: [], gradeLevel: "junior_high" })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: { systemInstruction: buildSystemPrompt("junior_high") },
+      })
+    );
+  });
+
+  test("gradeLevel が未指定の場合、エラーにならず既定の学年レベルで処理を継続する", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(makeRequest({ message: "テスト", history: [] }));
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: { systemInstruction: buildSystemPrompt("junior_high") },
+      })
+    );
+  });
+
+  test("gradeLevel が不正な値の場合、エラーにならず既定の学年レベルで処理を継続する", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({ message: "テスト", history: [], gradeLevel: "university" })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: { systemInstruction: buildSystemPrompt("junior_high") },
+      })
+    );
   });
 });
