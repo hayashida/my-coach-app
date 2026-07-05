@@ -9,15 +9,18 @@
  *   - 4.1: ドロワーでセッション選択 → 読み取り専用モードに切り替わり選択セッションのメッセージを表示
  *   - 4.2: 読み取り専用モード中は ChatInput が非表示
  *   - 4.3: 読み取り専用モード中は ReadonlyBanner が表示
+ *   - 3.3 (grade-level-coaching): 保存済みの学年レベルを取得し useChat に渡す。変更後は新しい学年レベルが使われる
  */
 
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { useChat } from "@/hooks/use-chat";
 import { useSessionStorage } from "@/hooks/use-session-storage";
+import { useGradeLevel } from "@/hooks/use-grade-level";
 import ChatPage from "@/app/chat/page";
 import type { Session } from "@/types/session";
 import type { Message } from "@/types/message";
+import type { GradeLevel } from "@/types/grade-level";
 
 // ─── モック定義 ───────────────────────────────────────────
 
@@ -27,6 +30,10 @@ jest.mock("@/hooks/use-chat", () => ({
 
 jest.mock("@/hooks/use-session-storage", () => ({
   useSessionStorage: jest.fn(),
+}));
+
+jest.mock("@/hooks/use-grade-level", () => ({
+  useGradeLevel: jest.fn(),
 }));
 
 jest.mock(
@@ -124,6 +131,8 @@ jest.mock(
 const mockUseChat = useChat as jest.MockedFunction<typeof useChat>;
 const mockUseSessionStorage =
   useSessionStorage as jest.MockedFunction<typeof useSessionStorage>;
+const mockUseGradeLevel =
+  useGradeLevel as jest.MockedFunction<typeof useGradeLevel>;
 
 // ─── ヘルパー ──────────────────────────────────────────────
 
@@ -139,6 +148,7 @@ function setupMocks(options: {
   messages?: Message[];
   isStreaming?: boolean;
   pastSessions?: Session[];
+  gradeLevel?: GradeLevel;
 }) {
   const clearMessages = jest.fn();
   const sendMessage = jest.fn().mockResolvedValue(undefined);
@@ -161,7 +171,13 @@ function setupMocks(options: {
     archiveCurrentSession: jest.fn(),
   });
 
-  return { clearMessages, sendMessage, sendImage };
+  const setGradeLevel = jest.fn();
+  mockUseGradeLevel.mockReturnValue({
+    gradeLevel: options.gradeLevel ?? "junior_high",
+    setGradeLevel,
+  });
+
+  return { clearMessages, sendMessage, sendImage, setGradeLevel };
 }
 
 // ─── テスト ────────────────────────────────────────────────
@@ -381,6 +397,50 @@ describe("ChatPage 統合テスト", () => {
         data: "test-base64",
         mimeType: "image/jpeg",
       });
+    });
+  });
+
+  // ── 学年レベルの取得と useChat への反映（要件3.3） ──
+
+  describe("学年レベルの取得と useChat への反映（要件3.3）", () => {
+    it("useGradeLevel が返す学年レベル（high_school）が useChat に渡される", () => {
+      setupMocks({ messages: [], gradeLevel: "high_school" });
+
+      render(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenCalledWith(
+        expect.objectContaining({ gradeLevel: "high_school" })
+      );
+    });
+
+    it("useGradeLevel が返す学年レベル（junior_high）が useChat に渡される", () => {
+      setupMocks({ messages: [], gradeLevel: "junior_high" });
+
+      render(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenCalledWith(
+        expect.objectContaining({ gradeLevel: "junior_high" })
+      );
+    });
+
+    it("設定画面で学年レベルを変更後にチャット画面へ戻ると、変更後の学年レベルが useChat に渡される", () => {
+      setupMocks({ messages: [], gradeLevel: "junior_high" });
+
+      const { rerender } = render(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenLastCalledWith(
+        expect.objectContaining({ gradeLevel: "junior_high" })
+      );
+
+      // 設定画面で high_school に変更してチャット画面へ戻った状態を模擬
+      // （ChatPage 再マウント時に useGradeLevel が新しい保存値を返す）
+      setupMocks({ messages: [], gradeLevel: "high_school" });
+
+      rerender(<ChatPage />);
+
+      expect(mockUseChat).toHaveBeenLastCalledWith(
+        expect.objectContaining({ gradeLevel: "high_school" })
+      );
     });
   });
 });

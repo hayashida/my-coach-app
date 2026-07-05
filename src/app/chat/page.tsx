@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useChat } from "@/hooks/use-chat";
 import { useSessionStorage } from "@/hooks/use-session-storage";
+import { useGradeLevel } from "@/hooks/use-grade-level";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { ChatInput } from "@/components/chat/chat-input";
 import { SessionDrawer } from "@/components/session/session-drawer";
@@ -13,6 +14,7 @@ import type { CompressedImage } from "@/lib/image-compression";
 export default function ChatPage() {
   const { initialSessionData, saveCurrentSession, archiveCurrentSession, pastSessions } =
     useSessionStorage();
+  const { gradeLevel } = useGradeLevel();
 
   // セッションID（null = まだメッセージを送っていない空の状態）
   const currentSessionIdRef = useRef<string | null>(
@@ -29,6 +31,7 @@ export default function ChatPage() {
 
   const { messages, isStreaming, error, sendMessage, sendImage, clearMessages } = useChat({
     initialMessages: initialSessionData?.messages ?? [],
+    gradeLevel,
     onStreamComplete: (msgs) => {
       if (currentSessionIdRef.current) {
         saveCurrentSession(currentSessionIdRef.current, msgs);
