@@ -31,6 +31,10 @@ Next.js App Router + Google Gemini 2.0 Flash + NextAuth.js v5 で構成し、Ver
 
 ## Specs (dependency order)
 
-- [ ] auth -- Next.jsプロジェクト初期化 + NextAuth.js v5 + Google OAuth + ALLOWED_EMAILS + ログインページ。Dependencies: none
-- [ ] chat-core -- チャットUI + Gemini API Route Handler + ストリーミング + Markdownレンダリング。Dependencies: auth
-- [ ] session-history -- localStorageセッション管理 + ドロワーナビゲーション + 読み取り専用モード。Dependencies: chat-core
+- [x] auth -- Next.jsプロジェクト初期化 + NextAuth.js v5 + Google OAuth + ALLOWED_EMAILS + ログインページ。Dependencies: none
+- [x] chat-core -- チャットUI + Gemini API Route Handler + ストリーミング + Markdownレンダリング。Dependencies: auth
+- [x] session-history -- localStorageセッション管理 + ドロワーナビゲーション + 読み取り専用モード。Dependencies: chat-core
+- [x] image-coaching -- チャット入力欄への写真送信（カメラ/アルバム選択）+ 画像分析コーチング + 送信後のテキスト継続。Dependencies: chat-core, session-history
+- [x] grade-level-coaching -- 学年レベル（中学生/高校生）の設定画面 + localStorage保存 + AIコーチの説明難易度・語彙の自動調整。Dependencies: chat-core, session-history
+
+全5スペック実装完了（2026-07-05時点）。image-coaching・grade-level-coachingはPhase 0時点のスコープ外だったが、追加要望により後続スペックとして起票・実装された。
