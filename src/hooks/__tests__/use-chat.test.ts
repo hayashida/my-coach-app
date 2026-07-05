@@ -588,4 +588,76 @@ describe("useChat", () => {
       expect(body.gradeLevel).toBeUndefined();
     });
   });
+
+  describe("UseChatOptions - responseLevel（要件 6.3）", () => {
+    it("sendMessage で responseLevel オプションを指定すると POST body に含まれる", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const { result } = renderHook(() => useChat({ responseLevel: "advanced" }));
+
+      await act(async () => {
+        await result.current.sendMessage("テスト送信");
+      });
+
+      const body = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body as string);
+      expect(body.responseLevel).toBe("advanced");
+    });
+
+    it("sendImage で responseLevel オプションを指定すると POST body に含まれる", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const mockImage = { data: "base64encodeddata", mimeType: "image/jpeg" as const };
+      const { result } = renderHook(() => useChat({ responseLevel: "basic" }));
+
+      await act(async () => {
+        await result.current.sendImage(mockImage);
+      });
+
+      const body = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body as string);
+      expect(body.responseLevel).toBe("basic");
+    });
+
+    it("responseLevel を指定しない場合、POST body に responseLevel フィールドが含まれない（後方互換）", async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("返答"));
+          controller.close();
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await act(async () => {
+        await result.current.sendMessage("テスト送信");
+      });
+
+      const body = JSON.parse((fetch as jest.Mock).mock.calls[0][1].body as string);
+      expect(body.responseLevel).toBeUndefined();
+    });
+  });
 });

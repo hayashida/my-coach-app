@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Message } from "@/types/message";
 import type { CompressedImage } from "@/lib/image-compression";
 import type { GradeLevel } from "@/types/grade-level";
+import type { ResponseLevel } from "@/types/response-level";
 
 export interface UseChatOptions {
   // マウント時の初期メッセージ（localStorage 復元用）
@@ -9,6 +10,9 @@ export interface UseChatOptions {
   // 呼び出し元（ChatPage）が useGradeLevel から取得して渡す学年レベル。
   // 未指定の場合は POST body に含めず、サーバー側のデフォルトフォールバックに委ねる。
   gradeLevel?: GradeLevel;
+  // 呼び出し元（ChatPage）が useResponseLevel から取得して渡す応答レベル。
+  // 未指定の場合は POST body に含めず、サーバー側のデフォルトフォールバックに委ねる。
+  responseLevel?: ResponseLevel;
   // ストリーミングがエラーなしで完了した後に呼ばれるコールバック
   onStreamComplete?: (messages: Message[]) => void;
 }
@@ -124,6 +128,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
           message: text,
           history: historySnapshot,
           gradeLevel: options?.gradeLevel,
+          responseLevel: options?.responseLevel,
         }),
       });
 
@@ -169,6 +174,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
           image: { data: image.data, mimeType: image.mimeType },
           history: historySnapshot,
           gradeLevel: options?.gradeLevel,
+          responseLevel: options?.responseLevel,
         }),
       });
 
