@@ -1,10 +1,14 @@
 import { useRef, useState } from "react";
 import { Message } from "@/types/message";
 import type { CompressedImage } from "@/lib/image-compression";
+import type { GradeLevel } from "@/types/grade-level";
 
 export interface UseChatOptions {
   // マウント時の初期メッセージ（localStorage 復元用）
   initialMessages?: Message[];
+  // 呼び出し元（ChatPage）が useGradeLevel から取得して渡す学年レベル。
+  // 未指定の場合は POST body に含めず、サーバー側のデフォルトフォールバックに委ねる。
+  gradeLevel?: GradeLevel;
   // ストリーミングがエラーなしで完了した後に呼ばれるコールバック
   onStreamComplete?: (messages: Message[]) => void;
 }
@@ -116,7 +120,11 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history: historySnapshot }),
+        body: JSON.stringify({
+          message: text,
+          history: historySnapshot,
+          gradeLevel: options?.gradeLevel,
+        }),
       });
 
       streamCompletedSuccessfully = await readStream(response);
@@ -160,6 +168,7 @@ export function useChat(options?: UseChatOptions): UseChatReturn {
         body: JSON.stringify({
           image: { data: image.data, mimeType: image.mimeType },
           history: historySnapshot,
+          gradeLevel: options?.gradeLevel,
         }),
       });
 
