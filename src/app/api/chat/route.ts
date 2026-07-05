@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { GoogleGenAI } from "@google/genai";
 import { buildSystemPrompt } from "@/lib/system-prompt";
 import { DEFAULT_GRADE_LEVEL, isGradeLevel } from "@/types/grade-level";
+import { DEFAULT_RESPONSE_LEVEL, isResponseLevel } from "@/types/response-level";
 import type { Message } from "@/types/message";
 
 type ChatRequest = {
@@ -10,6 +11,7 @@ type ChatRequest = {
   image?: { data: string; mimeType: string };
   history: Message[];
   gradeLevel?: string;
+  responseLevel?: string;
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -20,12 +22,16 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   try {
     const body = (await request.json()) as ChatRequest;
-    const { message, image, history, gradeLevel } = body;
+    const { message, image, history, gradeLevel, responseLevel } = body;
 
-    // 学年レベルの検証: 未指定・不正値はエラーにせず既定値にフォールバックする
+    // 学年レベル・応答レベルの検証: 未指定・不正値はエラーにせず既定値にフォールバックする
+    // （gradeLevel と responseLevel は互いに独立して検証する）
     const validatedGradeLevel = isGradeLevel(gradeLevel)
       ? gradeLevel
       : DEFAULT_GRADE_LEVEL;
+    const validatedResponseLevel = isResponseLevel(responseLevel)
+      ? responseLevel
+      : DEFAULT_RESPONSE_LEVEL;
 
     // バリデーション: message と image のどちらか一方が必須
     if (!message && !image) {
@@ -55,7 +61,12 @@ export async function POST(request: NextRequest): Promise<Response> {
     const chat = ai.chats.create({
       model: "gemini-3.1-flash-lite",
       history: geminiHistory,
-      config: { systemInstruction: buildSystemPrompt(validatedGradeLevel) },
+      config: {
+        systemInstruction: buildSystemPrompt(
+          validatedGradeLevel,
+          validatedResponseLevel
+        ),
+      },
     });
 
     const stream = await chat.sendMessageStream({

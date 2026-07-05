@@ -4,6 +4,8 @@ import { GoogleGenAI } from "@google/genai";
 import type { NextRequest } from "next/server";
 import type { Message } from "@/types/message";
 import { buildSystemPrompt } from "@/lib/system-prompt";
+import { DEFAULT_RESPONSE_LEVEL } from "@/types/response-level";
+import { DEFAULT_GRADE_LEVEL } from "@/types/grade-level";
 
 jest.mock("@/auth", () => ({
   auth: jest.fn(),
@@ -34,6 +36,7 @@ describe("POST /api/chat", () => {
     image?: { data: string; mimeType: string };
     history: Message[];
     gradeLevel?: string;
+    responseLevel?: string;
   }): NextRequest {
     return new Request("http://localhost/api/chat", {
       method: "POST",
@@ -186,7 +189,12 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(200);
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        config: { systemInstruction: buildSystemPrompt("high_school") },
+        config: {
+          systemInstruction: buildSystemPrompt(
+            "high_school",
+            DEFAULT_RESPONSE_LEVEL
+          ),
+        },
       })
     );
   });
@@ -212,7 +220,12 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(200);
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        config: { systemInstruction: buildSystemPrompt("junior_high") },
+        config: {
+          systemInstruction: buildSystemPrompt(
+            "junior_high",
+            DEFAULT_RESPONSE_LEVEL
+          ),
+        },
       })
     );
   });
@@ -236,7 +249,12 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(200);
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        config: { systemInstruction: buildSystemPrompt("junior_high") },
+        config: {
+          systemInstruction: buildSystemPrompt(
+            "junior_high",
+            DEFAULT_RESPONSE_LEVEL
+          ),
+        },
       })
     );
   });
@@ -262,7 +280,168 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(200);
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        config: { systemInstruction: buildSystemPrompt("junior_high") },
+        config: {
+          systemInstruction: buildSystemPrompt(
+            "junior_high",
+            DEFAULT_RESPONSE_LEVEL
+          ),
+        },
+      })
+    );
+  });
+
+  test("responseLevel: advanced の場合、応用向け systemInstruction が Gemini に渡される", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({ message: "テスト", history: [], responseLevel: "advanced" })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: {
+          systemInstruction: buildSystemPrompt("junior_high", "advanced"),
+        },
+      })
+    );
+  });
+
+  test("responseLevel: basic の場合、基本向け systemInstruction が Gemini に渡される", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({ message: "テスト", history: [], responseLevel: "basic" })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: {
+          systemInstruction: buildSystemPrompt("junior_high", "basic"),
+        },
+      })
+    );
+  });
+
+  test("responseLevel が未指定の場合、エラーにならず既定の応答レベルで処理を継続する（gradeLevel は指定値を維持）", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({ message: "テスト", history: [], gradeLevel: "high_school" })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: {
+          systemInstruction: buildSystemPrompt(
+            "high_school",
+            DEFAULT_RESPONSE_LEVEL
+          ),
+        },
+      })
+    );
+  });
+
+  test("responseLevel が不正な値の場合、エラーにならず既定の応答レベルで処理を継続する（gradeLevel は指定値を維持）", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({
+        message: "テスト",
+        history: [],
+        gradeLevel: "high_school",
+        responseLevel: "expert",
+      })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: {
+          systemInstruction: buildSystemPrompt(
+            "high_school",
+            DEFAULT_RESPONSE_LEVEL
+          ),
+        },
+      })
+    );
+  });
+
+  test("gradeLevel が不正な値でも responseLevel の指定値には影響しない（検証の独立性）", async () => {
+    (auth as jest.Mock).mockResolvedValue({ user: { email: "test@example.com" } });
+
+    const mockCreate = jest.fn().mockReturnValue({
+      sendMessageStream: jest.fn().mockResolvedValue(
+        (async function* () {
+          yield { text: "返答" };
+        })()
+      ),
+    });
+    (GoogleGenAI as jest.Mock).mockImplementationOnce(() => ({
+      chats: { create: mockCreate },
+    }));
+
+    const res = await POST(
+      makeRequest({
+        message: "テスト",
+        history: [],
+        gradeLevel: "university",
+        responseLevel: "advanced",
+      })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: {
+          systemInstruction: buildSystemPrompt(DEFAULT_GRADE_LEVEL, "advanced"),
+        },
       })
     );
   });

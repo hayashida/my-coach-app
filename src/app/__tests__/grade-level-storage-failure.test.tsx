@@ -36,6 +36,7 @@ import SettingsPage from "@/app/settings/page";
 import { POST } from "@/app/api/chat/route";
 import { buildSystemPrompt } from "@/lib/system-prompt";
 import { DEFAULT_GRADE_LEVEL } from "@/types/grade-level";
+import { DEFAULT_RESPONSE_LEVEL } from "@/types/response-level";
 
 const GRADE_LEVEL_KEY = "coach_grade_level";
 
@@ -175,7 +176,12 @@ describe("学年レベル保存失敗時の継続動作（タスク4.2、要件4
     // 動作が継続していることを確認する（要件4.1）
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        config: { systemInstruction: buildSystemPrompt(DEFAULT_GRADE_LEVEL) },
+        config: {
+          systemInstruction: buildSystemPrompt(
+            DEFAULT_GRADE_LEVEL,
+            DEFAULT_RESPONSE_LEVEL
+          ),
+        },
       })
     );
   });
