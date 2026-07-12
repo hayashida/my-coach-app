@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useGradeLevel } from "@/hooks/use-grade-level";
 import { useResponseLevel } from "@/hooks/use-response-level";
@@ -28,6 +29,7 @@ function responseLevelLabel(level: ResponseLevel): string {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
   const { gradeLevel, setGradeLevel } = useGradeLevel();
   const { responseLevel, setResponseLevel } = useResponseLevel();
   // 保存前の選択値（保存済み値とは独立して保持する）。マウント時の現在値で初期化する。
@@ -39,6 +41,7 @@ export default function SettingsPage() {
   const handleSave = () => {
     setGradeLevel(selectedGrade);
     setResponseLevel(selectedResponse);
+    router.push("/chat");
   };
 
   return (

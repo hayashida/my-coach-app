@@ -12,13 +12,22 @@
 
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { useRouter } from "next/navigation";
 import SettingsPage from "@/app/settings/page";
+
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(),
+}));
 
 const GRADE_LEVEL_KEY = "coach_grade_level";
 const RESPONSE_LEVEL_KEY = "coach_response_level";
 
+const pushMock = jest.fn();
+
 beforeEach(() => {
   localStorage.clear();
+  pushMock.mockClear();
+  (useRouter as jest.Mock).mockReturnValue({ push: pushMock });
 });
 
 describe("SettingsPage 統合テスト", () => {
@@ -78,6 +87,14 @@ describe("SettingsPage 統合テスト", () => {
       (screen.getByRole("radio", { name: "高校生" }) as HTMLInputElement)
         .checked
     ).toBe(true);
+  });
+
+  it("保存すると、チャット画面へ自動的に遷移する", () => {
+    render(<SettingsPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    expect(pushMock).toHaveBeenCalledWith("/chat");
   });
 
   it("チャット画面へ戻る導線が存在する", () => {

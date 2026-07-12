@@ -50,6 +50,10 @@ jest.mock("@google/genai", () => ({
   GoogleGenAI: jest.fn(),
 }));
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
 // ─── ゴールデンパスに無関係な UI 部品のモック ───────────────────────
 
 jest.mock("@/components/session/session-drawer", () => ({

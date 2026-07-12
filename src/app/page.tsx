@@ -9,7 +9,7 @@ export default function Home() {
             my-coach-app
           </h1>
           <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            中学生の学習をサポートするチャットアプリです。
+            学生の学習をサポートするチャットアプリです。
             <br />
             AIコーチがあなたの質問に丁寧に答えます。
           </p>

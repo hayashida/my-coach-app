@@ -43,6 +43,10 @@ jest.mock("@google/genai", () => ({
   GoogleGenAI: jest.fn(),
 }));
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
 // ─── ゴールデンパスに無関係な UI 部品のモック ───────────────────────
 // （@base-ui/react/dialog・react-markdown 等、この検証と無関係な依存を排除する）
 
