@@ -75,9 +75,9 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       {/* ヘッダー */}
-      <header className="flex items-center justify-between p-4 border-b">
+      <header className="flex items-center justify-between p-4 border-b pt-[max(1rem,env(safe-area-inset-top))]">
         <h1 className="text-lg font-semibold">AI コーチ</h1>
         <button
           onClick={() => setIsDrawerOpen(true)}

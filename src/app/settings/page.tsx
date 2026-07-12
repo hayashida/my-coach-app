@@ -42,8 +42,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
-      <header className="flex items-center justify-between p-4 border-b">
+    <div className="flex h-dvh flex-col">
+      <header className="flex items-center justify-between p-4 border-b pt-[max(1rem,env(safe-area-inset-top))]">
         <h1 className="text-lg font-semibold">学年レベル・応答レベル設定</h1>
         <Link
           href="/chat"
